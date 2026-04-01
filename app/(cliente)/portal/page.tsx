@@ -15,9 +15,10 @@ import {
   TrendingUp,
   ShieldCheck
 } from 'lucide-react';
+import { Suspense } from 'react';
 import { formatCurrency } from '@/lib/utils';
 
-export default function PortalPage() {
+function PortalContent() {
   const searchParams = useSearchParams();
   const clienteId = searchParams.get('clienteId');
   
@@ -197,5 +198,18 @@ export default function PortalPage() {
         </p>
       </footer>
     </div>
+  );
+}
+
+export default function PortalPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <div className="w-12 h-12 border-4 border-[#D4A017] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-black text-[#0F0A4D] uppercase tracking-[0.2em]">Cargando Portal...</p>
+      </div>
+    }>
+      <PortalContent />
+    </Suspense>
   );
 }
