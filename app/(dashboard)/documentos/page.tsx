@@ -5,26 +5,31 @@ import { DocumentoService } from '@/services/documento.service';
 import type { Documento } from '@/types';
 import { cn } from '@/lib/utils';
 import DashboardHeader from '@/components/layout/DashboardHeader';
-import { FileText, Download, User, Calendar, ExternalLink } from 'lucide-react';
+import { FileText, Download, User, Calendar, ExternalLink, Camera, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import ScannerModal from '@/components/shared/ScannerModal';
+import Button from '@/components/ui/Button';
 
 export default function DocumentosPage() {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const itemsPerPage = 10;
 
+  const fetchDocs = async () => {
+    setLoading(true);
+    try {
+      const data = await DocumentoService.getAll();
+      setDocumentos(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDocs = async () => {
-      try {
-        const data = await DocumentoService.getAll();
-        setDocumentos(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchDocs();
   }, []);
 
@@ -39,7 +44,22 @@ export default function DocumentosPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <DashboardHeader 
         title="Gestión Documental" 
-        subtitle="Registro centralizado de documentos generados y subidos."
+        subtitle="Registro centralizado de documentos generados y subidos físicamente."
+        actions={
+          <Button 
+            onClick={() => setIsScannerOpen(true)}
+            className="bg-[#0F0A4D] hover:bg-navy-800 text-white gap-2 px-6 h-12 shadow-xl shadow-navy-900/10"
+          >
+            <Camera className="w-5 h-5 text-[#D4A017]" />
+            Crear Documento Físico
+          </Button>
+        }
+      />
+
+      <ScannerModal 
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onSuccess={fetchDocs}
       />
 
       <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
