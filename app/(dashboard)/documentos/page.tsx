@@ -126,8 +126,9 @@ export default function DocumentosPage() {
                           <ExternalLink className="w-5 h-5" />
                         </Link>
                         <button 
+                          onClick={() => doc.url_archivo && window.open(doc.url_archivo, '_blank')}
                           className="p-2.5 rounded-xl bg-amber-50 text-[#D4A017] hover:bg-[#D4A017] hover:text-white transition-all shadow-sm"
-                          title="Descargar"
+                          title="Descargar/Ver"
                         >
                           <Download className="w-5 h-5" />
                         </button>

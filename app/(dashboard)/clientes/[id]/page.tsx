@@ -187,11 +187,15 @@ export default function ClienteDetailPage() {
                        <Badge variant="info" className="!py-0.5 !px-3 !text-[10px] !font-bold !bg-blue-100 !text-blue-600 border-none">
                          SUBIDO
                        </Badge>
-                       <button className="p-2 text-gray-400 hover:text-[#D4A017] transition-colors" title="Descargar">
-                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                         </svg>
-                       </button>
+                        <button 
+                          onClick={() => doc.url_archivo && window.open(doc.url_archivo, '_blank')}
+                          className="p-2 text-gray-400 hover:text-[#D4A017] transition-colors" 
+                          title="Descargar/Ver"
+                        >
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </button>
                     </div>
                   </div>
                 )) : (
