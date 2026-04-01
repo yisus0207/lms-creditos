@@ -15,6 +15,12 @@ export const metadata: Metadata = {
   description:
     'Plataforma integral de gestión de créditos hipotecarios: viabilidad, documentación y aprobación bancaria.',
   metadataBase: new URL('https://lmscreditos.com'),
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'LMS Créditos',
+  },
 };
 
 export default function RootLayout({

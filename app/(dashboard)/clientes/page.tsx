@@ -8,7 +8,8 @@ import ClienteTable from '@/components/shared/ClienteTable';
 import Modal from '@/components/ui/Modal';
 import UIModal from '@/components/ui/UIModal';
 import type { Cliente } from '@/types';
-import { Plus, Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Plus, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -22,6 +23,8 @@ export default function ClientesPage() {
     isOpen: false,
     id: null,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const loadClientes = useCallback(async () => {
     setLoading(true);
@@ -54,6 +57,13 @@ export default function ClientesPage() {
     }
     setConfirmModal({ isOpen: false, id: null });
   };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentClientes = clientes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(clientes.length / itemsPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
@@ -97,11 +107,58 @@ export default function ClientesPage() {
             </div>
             <p className="text-xs font-black text-gray-400 uppercase tracking-[0.25em]">Sincronizando Cartera...</p>
           </div>
+        ) : currentClientes.length > 0 ? (
+          <div className="flex flex-col">
+            <ClienteTable 
+              clientes={currentClientes} 
+              onDelete={handleDelete} 
+            />
+            
+            {/* Pagination UI */}
+            {totalPages > 1 && (
+              <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex items-center justify-between">
+                <div className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
+                  Página {currentPage} de {totalPages}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => paginate(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => paginate(num)}
+                        className={cn(
+                          "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black transition-all",
+                          currentPage === num 
+                            ? "bg-[#D4A017] text-[#0F0A4D] shadow-lg shadow-amber-900/10"
+                            : "bg-white border border-gray-100 text-gray-400 hover:bg-gray-100"
+                        )}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => paginate(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
-          <ClienteTable 
-            clientes={clientes} 
-            onDelete={handleDelete} 
-          />
+          <div className="flex flex-col h-96 items-center justify-center text-gray-400 italic font-medium">
+            No hay clientes registrados en la base de datos.
+          </div>
         )}
       </section>
 

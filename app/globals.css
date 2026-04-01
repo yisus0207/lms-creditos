@@ -59,3 +59,39 @@ body {
   outline-offset: 2px;
   border-radius: 4px;
 }
+/* ============================================================
+   Responsiveness Utility Failsafes (Phase 19)
+   ============================================================ */
+
+/* Mobile Navigation (Bottom Bar) */
+.mobile-nav-container {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .mobile-nav-container {
+    display: none !important;
+  }
+}
+
+/* Desktop Sidebar */
+.desktop-sidebar-container {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktop-sidebar-container {
+    display: flex !important;
+  }
+}
+
+/* Layout Padding Fix */
+.main-layout-container {
+  padding-bottom: 5rem; /* pb-20 */
+}
+
+@media (min-width: 1024px) {
+  .main-layout-container {
+    padding-bottom: 0 !important;
+  }
+}

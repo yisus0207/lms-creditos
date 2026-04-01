@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { DocumentoService } from '@/services/documento.service';
 import type { Documento } from '@/types';
+import { cn } from '@/lib/utils';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 import { FileText, Download, User, Calendar, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -10,6 +11,8 @@ import Link from 'next/link';
 export default function DocumentosPage() {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -24,6 +27,13 @@ export default function DocumentosPage() {
     };
     fetchDocs();
   }, []);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentDocs = documentos.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(documentos.length / itemsPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -60,8 +70,8 @@ export default function DocumentosPage() {
                 <tr>
                   <td colSpan={4} className="px-8 py-12 text-center text-gray-400 italic">Cargando documentos...</td>
                 </tr>
-              ) : documentos.length > 0 ? (
-                documentos.map((doc) => (
+              ) : currentDocs.length > 0 ? (
+                currentDocs.map((doc) => (
                   <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors group">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
@@ -113,6 +123,47 @@ export default function DocumentosPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination UI */}
+        {totalPages > 1 && (
+          <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex items-center justify-between">
+            <div className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              Página {currentPage} de {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] font-bold text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0F0A4D] hover:text-white transition-all shadow-sm"
+              >
+                Anterior
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => paginate(num)}
+                    className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all",
+                      currentPage === num 
+                        ? "bg-[#D4A017] text-[#0F0A4D] shadow-md shadow-amber-900/10"
+                        : "bg-white border border-gray-100 text-gray-400 hover:bg-gray-50"
+                    )}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] font-bold text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0F0A4D] hover:text-white transition-all shadow-sm"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

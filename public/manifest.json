@@ -1,0 +1,22 @@
+{
+  "name": "LMS Créditos",
+  "short_name": "LMS",
+  "description": "Plataforma de gestión de préstamos y clientes",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0F0A4D",
+  "theme_color": "#0F0A4D",
+  "icons": [
+    {
+      "src": "/images/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    }
+  ]
+}

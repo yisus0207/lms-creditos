@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Sidebar from '@/components/layout/Sidebar';
+import MobileNav from '@/components/layout/MobileNav';
 import AuthGuard from '@/components/shared/AuthGuard';
 
 export const metadata: Metadata = {
@@ -13,12 +14,19 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
-      <div className="flex h-screen overflow-hidden bg-gray-50">
-        {/* Sidebar */}
-        <Sidebar />
+      <div className="flex h-screen overflow-hidden bg-gray-50 main-layout-container">
+        {/* Sidebar (Desktop) */}
+        <div className="desktop-sidebar-container h-full">
+          <Sidebar aria-label="Sidebar principal" />
+        </div>
+
+        {/* Mobile Navigation (Bottom Bar) */}
+        <div className="mobile-nav-container">
+          <MobileNav />
+        </div>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto w-full">
           <div className="mx-auto max-w-7xl p-6 lg:p-8">{children}</div>
         </main>
       </div>

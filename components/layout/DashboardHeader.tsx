@@ -46,12 +46,12 @@ export default function DashboardHeader({
         <div className="relative pl-8">
           {/* Vertical Decoration */}
           <div className="absolute left-0 top-1 bottom-1 w-1.5 rounded-full bg-gradient-to-b from-[#D4A017] to-[#B8860B] shadow-[0_0_15px_rgba(212,160,23,0.3)]" />
-          
+
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-4xl font-black text-[#0F0A4D] tracking-tight">{title}</h1>
             <Sparkles className="w-5 h-5 text-[#D4A017] opacity-50" />
           </div>
-          
+
           {displayDescription && (
             <p className="text-gray-400 font-medium max-w-2xl leading-relaxed">
               {displayDescription}

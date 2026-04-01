@@ -172,7 +172,7 @@ export default function DashboardPage() {
             </div>
             Ingresos por Tipo
           </h3>
-          <div className="h-[300px] w-full">
+          <div className="h-[300px] min-h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               {incomeData.length > 0 ? (
                 <BarChart data={incomeData}>
@@ -218,7 +218,7 @@ export default function DashboardPage() {
             </div>
             Distribución de Cartera
           </h3>
-          <div className="h-[300px] w-full">
+          <div className="h-[300px] min-h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               {statusData.length > 0 ? (
                 <PieChart>

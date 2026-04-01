@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { APP_NAME, NAV_LINKS_DASHBOARD } from '@/constants';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  Users, 
-  DollarSign, 
-  FileText, 
+import {
+  LayoutDashboard,
+  Users,
+  DollarSign,
+  FileText,
   Briefcase,
   ChevronRight,
   ShieldCheck,
@@ -52,12 +52,12 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="flex h-full w-72 flex-col bg-[#0F0A4D] border-r border-white/5 shadow-2xl z-50">
+    <aside className="hidden lg:flex h-full w-72 flex-col bg-[#0F0A4D] border-r border-white/5 shadow-2xl z-50">
       {/* Brand */}
       <div className="flex h-24 items-center px-8 border-b border-white/5 bg-[#0F0A4D]">
-        <img 
-          src="/images/logo.jpg" 
-          alt="LMS Logo" 
+        <img
+          src="/images/logo.jpg"
+          alt="LMS Logo"
           className="w-12 h-12 rounded-xl border border-white/10 shadow-lg mr-4 transition-transform hover:scale-105"
         />
         <div className="flex flex-col">
@@ -75,9 +75,9 @@ export default function Sidebar() {
               link.href === '/dashboard'
                 ? pathname === '/dashboard'
                 : pathname === link.href || pathname.startsWith(link.href + '/');
-            
+
             const Icon = ICON_MAP[link.icon as string] || FileText;
-            
+
             return (
               <li key={link.href}>
                 <Link
@@ -104,7 +104,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="p-6 border-t border-white/5 bg-[#08152b]/50">
-        <button 
+        <button
           onClick={handleLogout}
           className="w-full bg-white/5 hover:bg-rose-500/10 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 group/logout border border-transparent hover:border-rose-500/30"
         >
