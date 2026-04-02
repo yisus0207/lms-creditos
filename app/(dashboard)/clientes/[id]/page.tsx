@@ -10,6 +10,7 @@ import StatusTracker from '@/components/shared/StatusTracker';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import DocumentGenerator from '@/components/shared/DocumentGenerator';
+import DocumentPreviewModal from '@/components/shared/DocumentPreviewModal';
 import { Eye, Download } from 'lucide-react';
 
 export default function ClienteDetailPage() {
@@ -24,6 +25,7 @@ export default function ClienteDetailPage() {
     documentos: [],
   });
   const [loading, setLoading] = useState(true);
+  const [selectedDoc, setSelectedDoc] = useState<Documento | null>(null);
 
   const fetchDetail = useCallback(async () => {
     if (!id) return;
@@ -191,7 +193,7 @@ export default function ClienteDetailPage() {
                         </Badge>
                         <div className="flex items-center gap-1">
                           <button 
-                            onClick={() => doc.url_archivo && window.open(doc.url_archivo, '_blank')}
+                            onClick={() => setSelectedDoc(doc)}
                             className="p-2 text-gray-400 hover:text-blue-600 transition-colors" 
                             title="Previsualizar"
                           >
@@ -254,6 +256,11 @@ export default function ClienteDetailPage() {
           </div>
         </div>
       </div>
+
+      <DocumentPreviewModal 
+        documento={selectedDoc} 
+        onClose={() => setSelectedDoc(null)} 
+      />
     </div>
   );
 }

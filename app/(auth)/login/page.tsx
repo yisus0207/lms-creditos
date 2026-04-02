@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
 
   // Check if already logged in
   useEffect(() => {
@@ -51,11 +52,43 @@ export default function LoginPage() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError('Por favor, ingresa tu correo corporativo primero.');
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/login/reset-password`,
+      });
+      if (resetError) throw resetError;
+      setResetSent(true);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#0F0A4D] px-4 relative overflow-hidden">
       {/* Dynamic Background */}
       <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-[#D4A017]/5 rounded-full blur-[120px] animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px]" />
+      
+      {/* Back to Home Button */}
+      <button 
+        onClick={() => router.push('/')}
+        className="absolute top-8 left-8 flex items-center gap-2 text-white/40 hover:text-[#D4A017] transition-all group/back z-20"
+      >
+        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/back:bg-[#D4A017]/10 transition-colors">
+          <Sparkles className="w-4 h-4" />
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-widest">Volver al Inicio</span>
+      </button>
       
       <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in-95 duration-700">
         {/* Brand Header */}
@@ -81,6 +114,13 @@ export default function LoginPage() {
             <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3 text-rose-200 text-sm font-medium animate-in slide-in-from-top-2">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span>{error}</span>
+            </div>
+          )}
+
+          {resetSent && (
+            <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3 text-emerald-200 text-sm font-medium animate-in slide-in-from-top-2">
+              <Sparkles className="w-5 h-5 shrink-0" />
+              <span>¡Correo de recuperación enviado! Revisa tu bandeja de entrada.</span>
             </div>
           )}
 
@@ -130,8 +170,13 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-10 text-center">
-            <button className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] hover:text-[#D4A017] transition-colors">
-              ¿Olvidaste tus credenciales? Contactar soporte
+            <button 
+              type="button"
+              onClick={handleResetPassword}
+              disabled={loading || resetSent}
+              className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] hover:text-[#D4A017] transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Procesando...' : '¿Olvidaste tu contraseña? Recuperar aquí'}
             </button>
           </div>
         </div>

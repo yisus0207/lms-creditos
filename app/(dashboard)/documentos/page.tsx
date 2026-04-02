@@ -8,6 +8,7 @@ import DashboardHeader from '@/components/layout/DashboardHeader';
 import { FileText, Download, User, Calendar, ExternalLink, Camera, Sparkles, Eye } from 'lucide-react';
 import Link from 'next/link';
 import ScannerModal from '@/components/shared/ScannerModal';
+import DocumentPreviewModal from '@/components/shared/DocumentPreviewModal';
 import Button from '@/components/ui/Button';
 
 export default function DocumentosPage() {
@@ -15,6 +16,7 @@ export default function DocumentosPage() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<Documento | null>(null);
   const itemsPerPage = 10;
 
   const fetchDocs = async () => {
@@ -126,7 +128,7 @@ export default function DocumentosPage() {
                           <ExternalLink className="w-5 h-5" />
                         </Link>
                         <button 
-                          onClick={() => doc.url_archivo && window.open(doc.url_archivo, '_blank')}
+                          onClick={() => setSelectedDoc(doc)}
                           className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                           title="Previsualizar"
                         >
@@ -204,6 +206,11 @@ export default function DocumentosPage() {
           </div>
         )}
       </div>
+
+      <DocumentPreviewModal 
+        documento={selectedDoc} 
+        onClose={() => setSelectedDoc(null)} 
+      />
     </div>
   );
 }
