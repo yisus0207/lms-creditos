@@ -5,7 +5,7 @@ import { DocumentoService } from '@/services/documento.service';
 import type { Documento } from '@/types';
 import { cn } from '@/lib/utils';
 import DashboardHeader from '@/components/layout/DashboardHeader';
-import { FileText, Download, User, Calendar, ExternalLink, Camera, Sparkles } from 'lucide-react';
+import { FileText, Download, User, Calendar, ExternalLink, Camera, Sparkles, Eye } from 'lucide-react';
 import Link from 'next/link';
 import ScannerModal from '@/components/shared/ScannerModal';
 import Button from '@/components/ui/Button';
@@ -127,8 +127,26 @@ export default function DocumentosPage() {
                         </Link>
                         <button 
                           onClick={() => doc.url_archivo && window.open(doc.url_archivo, '_blank')}
+                          className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                          title="Previsualizar"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            if (!doc.url_archivo) return;
+                            const response = await fetch(doc.url_archivo);
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${doc.tipo_documento.replace(/\s+/g, '_')}_${doc.id.substring(0,5)}.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                          }}
                           className="p-2.5 rounded-xl bg-amber-50 text-[#D4A017] hover:bg-[#D4A017] hover:text-white transition-all shadow-sm"
-                          title="Descargar/Ver"
+                          title="Descargar"
                         >
                           <Download className="w-5 h-5" />
                         </button>

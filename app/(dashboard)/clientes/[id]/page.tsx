@@ -10,6 +10,7 @@ import StatusTracker from '@/components/shared/StatusTracker';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import DocumentGenerator from '@/components/shared/DocumentGenerator';
+import { Eye, Download } from 'lucide-react';
 
 export default function ClienteDetailPage() {
   const { id } = useParams();
@@ -184,18 +185,38 @@ export default function ClienteDetailPage() {
                        </div>
                     </div>
                     <div className="flex items-center gap-3">
-                       <Badge variant="info" className="!py-0.5 !px-3 !text-[10px] !font-bold !bg-blue-100 !text-blue-600 border-none">
-                         SUBIDO
-                       </Badge>
-                        <button 
-                          onClick={() => doc.url_archivo && window.open(doc.url_archivo, '_blank')}
-                          className="p-2 text-gray-400 hover:text-[#D4A017] transition-colors" 
-                          title="Descargar/Ver"
-                        >
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
-                        </button>
+                     <div className="flex items-center gap-2">
+                        <Badge variant="info" className="!py-0.5 !px-3 !text-[10px] !font-bold !bg-blue-100 !text-blue-600 border-none">
+                          SUBIDO
+                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <button 
+                            onClick={() => doc.url_archivo && window.open(doc.url_archivo, '_blank')}
+                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors" 
+                            title="Previsualizar"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          <button 
+                            onClick={async () => {
+                              if (!doc.url_archivo) return;
+                              const response = await fetch(doc.url_archivo);
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${doc.tipo_documento.replace(/\s+/g, '_')}_${doc.id.substring(0,5)}.pdf`;
+                              document.body.appendChild(a);
+                              a.click();
+                              window.URL.revokeObjectURL(url);
+                            }}
+                            className="p-2 text-gray-400 hover:text-[#D4A017] transition-colors" 
+                            title="Descargar"
+                          >
+                            <Download className="w-5 h-5" />
+                          </button>
+                        </div>
+                     </div>
                     </div>
                   </div>
                 )) : (
