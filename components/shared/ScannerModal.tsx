@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabase';
 import { ClienteService } from '@/services/cliente.service';
 import { cn } from '@/lib/utils';
 import type { Cliente } from '@/types';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 
 interface ScannerModalProps {
   isOpen: boolean;
@@ -193,23 +194,17 @@ export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModa
 
           {step === 1 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6">
-              <div>
-                <label className="block text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-widest mb-4">
-                  1. Seleccione al Beneficiario
-                </label>
-                <select 
-                  className="w-full h-16 bg-gray-50 border-gray-100 border-2 rounded-[24px] px-8 text-sm font-bold text-[#0F0A4D] focus:border-[#D4A017] focus:ring-0 transition-all outline-none"
-                  value={selectedClientId}
-                  onChange={(e) => setSelectedClientId(e.target.value)}
-                >
-                  <option value="">Buscar nombre o cédula...</option>
-                  {clients.map(client => (
-                    <option key={client.id} value={client.id}>
-                      {client.nombre} — {client.numero_documento}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SearchableSelect 
+                label="1. Seleccione al Beneficiario"
+                placeholder="Buscar nombre o cédula..."
+                options={clients.map(c => ({
+                  id: c.id,
+                  label: c.nombre,
+                  sublabel: `Cédula: ${c.numero_documento}`
+                }))}
+                value={selectedClientId}
+                onChange={setSelectedClientId}
+              />
 
               <div>
                 <label className="block text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-widest mb-4">

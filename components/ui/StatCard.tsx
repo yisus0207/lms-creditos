@@ -35,18 +35,19 @@ export default function StatCard({
   }
 
   return (
-    <Card className="group overflow-hidden px-4 py-5" padding="none">
+    <Card className="group overflow-hidden px-4 py-5 animate-reveal-up" padding="none">
       <div className="flex items-center gap-4 min-w-0">
         {icon && (
           <div className="relative shrink-0">
             <div className="absolute inset-0 bg-[#D4A017] blur-xl opacity-5 group-hover:opacity-10 transition-opacity" />
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-[#0F0A4D]/5 border border-gray-100/50 text-[#0F0A4D] group-hover:bg-[#0F0A4D] group-hover:text-white transition-all duration-500 shadow-sm">
+            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-[#0F0A4D]/5 border border-gray-100/50 text-[#0F0A4D] group-hover:bg-[#0F0A4D] group-hover:text-white group-hover:scale-110 transition-all duration-500 shadow-sm overflow-hidden text-sm sm:text-base">
+              <div className="absolute inset-0 bg-white/10 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 skew-x-12" />
               {icon}
             </div>
           </div>
         )}
 
-        <div className="space-y-1 min-w-0 flex-1 overflow-visible">
+        <div className="space-y-1 min-w-0 flex-1 overflow-visible group-hover:translate-x-1 transition-transform duration-500">
           <div className="flex items-center gap-1.5 min-w-0">
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] whitespace-nowrap overflow-hidden">
               {title}
@@ -59,7 +60,7 @@ export default function StatCard({
           </div>
           
           <div className="min-w-0">
-            <p className="text-xl sm:text-2xl font-black text-[#0F0A4D] tracking-tighter leading-none transition-all duration-500 whitespace-nowrap overflow-visible">
+            <p className="text-xl sm:text-2xl font-black text-[#0F0A4D] tracking-tighter leading-none transition-all duration-500 whitespace-nowrap overflow-visible group-hover:scale-105 origin-left">
               {value}
             </p>
             {subtitle && (

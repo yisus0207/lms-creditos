@@ -1,5 +1,5 @@
-import React from 'react';
 import { Check, Circle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Step {
   label: string;
@@ -40,29 +40,37 @@ export default function StatusTracker({ currentStep }: StatusTrackerProps) {
           <div key={step.key} className="relative z-10 flex flex-col items-center flex-1">
             {/* Step Circle */}
             <div 
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border-2 ${
+              className={cn(
+                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-700 border-2 relative",
                 isCompleted 
                   ? 'bg-[#0F0A4D] border-[#0F0A4D] text-white shadow-lg shadow-navy-100' 
                   : isCurrent
-                    ? 'bg-white border-[#D4A017] text-[#D4A017] shadow-xl shadow-amber-100 scale-110'
+                    ? 'bg-white border-[#D4A017] text-[#D4A017] shadow-2xl shadow-amber-200 animate-glow-gold scale-125 z-20'
                     : 'bg-white border-gray-100 text-gray-300'
-              }`}
+              )}
             >
               {isCompleted ? (
                 <Check className="w-6 h-6 stroke-[3]" />
               ) : isCurrent ? (
-                <div className="w-3 h-3 rounded-full bg-[#D4A017] animate-pulse" />
+                <div className="relative flex items-center justify-center">
+                  <div className="w-3 h-3 rounded-full bg-[#D4A017] animate-ping absolute opacity-70" />
+                  <div className="w-3 h-3 rounded-full bg-[#D4A017] relative z-10" />
+                </div>
               ) : (
-                <Circle className="w-4 h-4 fill-gray-50" />
+                <Circle className="w-4 h-4 fill-gray-50/50" />
               )}
             </div>
 
             {/* Label */}
-            <div className="absolute top-14 text-center w-full">
+            <div className={cn(
+              "absolute top-14 text-center w-full transition-all duration-500",
+              isCurrent && "animate-floating"
+            )}>
               <span 
-                className={`text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em] transition-colors duration-500 ${
-                  isCurrent ? 'text-[#D4A017]' : isCompleted ? 'text-[#0F0A4D]' : 'text-gray-400'
-                }`}
+                className={cn(
+                  "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.25em] transition-colors duration-500",
+                  isCurrent ? 'text-[#D4A017] drop-shadow-sm' : isCompleted ? 'text-[#0F0A4D]' : 'text-gray-400'
+                )}
               >
                 {step.label}
               </span>

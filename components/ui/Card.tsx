@@ -24,7 +24,7 @@ export default function Card({
   return (
     <div
       className={cn(
-        'relative bg-white rounded-[32px] border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] overflow-hidden group transition-all duration-300 hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)]',
+        'relative bg-white rounded-[32px] border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] overflow-hidden group transition-all duration-500 hover:shadow-[0_12px_44px_-10px_rgba(0,0,0,0.12)] hover:-translate-y-1.5 animate-reveal-up',
         paddingStyles[padding],
         hasAccent && 'pl-10',
         className

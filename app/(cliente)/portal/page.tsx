@@ -71,15 +71,15 @@ function PortalContent() {
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {/* Hero Welcome */}
-      <div className="relative overflow-hidden bg-[#0F0A4D] rounded-[40px] p-8 sm:p-12 text-white shadow-2xl shadow-navy-900/20">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4A017] opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+      <div className="relative overflow-hidden bg-[#0F0A4D] rounded-[40px] p-8 sm:p-12 text-white shadow-2xl shadow-navy-900/20 animate-reveal-up">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4A017] opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl animate-pulse" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-8">
-          <div>
+          <div className="animate-reveal-right" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center gap-4 mb-6">
               <img 
                 src="/images/logo.jpg" 
                 alt="LMS Logo" 
-                className="w-12 h-12 rounded-2xl border border-[#D4A017]/50 shadow-lg shadow-[#D4A017]/10"
+                className="w-12 h-12 rounded-2xl border border-[#D4A017]/50 shadow-lg shadow-[#D4A017]/10 animate-floating"
               />
               <div className="flex flex-col">
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4A017] leading-none">Conexión Segura</span>
@@ -93,22 +93,22 @@ function PortalContent() {
               Gestiona tu solicitud de crédito hipotecario y documentos desde tu espacio privado.
             </p>
           </div>
-          <div className="hidden lg:block">
-             <div className="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 text-center min-w-[200px]">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#D4A017] mb-2">Inversión Estimada</p>
-                <p className="text-3xl font-black">{formatCurrency(cliente.valor_estimado || 0)}</p>
+          <div className="hidden lg:block animate-reveal-up" style={{ animationDelay: '0.4s' }}>
+             <div className="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 text-center min-w-[200px] hover:bg-white/10 transition-colors group">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#D4A017] mb-2 group-hover:scale-110 transition-transform">Inversión Estimada</p>
+                <p className="text-3xl font-black group-hover:text-[#D4A017] transition-colors">{formatCurrency(cliente.valor_estimado || 0)}</p>
              </div>
           </div>
         </div>
       </div>
 
       {/* Progress Section */}
-      <section className="space-y-6">
+      <section className="space-y-6 animate-reveal-up" style={{ animationDelay: '0.3s' }}>
         <div className="flex items-center gap-3">
-          <div className="w-1.5 h-6 bg-[#D4A017] rounded-full" />
+          <div className="w-1.5 h-6 bg-[#D4A017] rounded-full animate-pulse" />
           <h2 className="text-xl font-black text-[#0F0A4D] uppercase tracking-wider">Estado de tu Trámite</h2>
         </div>
-        <Card padding="lg" hasAccent>
+        <Card padding="lg" hasAccent className="hover:!translate-y-0 shadow-none hover:shadow-xl transition-shadow">
           <div className="px-4">
             <StatusTracker currentStep={cliente.estado} />
           </div>
@@ -117,26 +117,29 @@ function PortalContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Documents Section */}
-        <section className="lg:col-span-2 space-y-6">
+        <section className="lg:col-span-2 space-y-6 animate-reveal-up" style={{ animationDelay: '0.4s' }}>
           <div className="flex items-center gap-3">
              <div className="w-1.5 h-6 bg-[#D4A017] rounded-full" />
              <h2 className="text-xl font-black text-[#0F0A4D] uppercase tracking-wider">Documentos para Descarga</h2>
           </div>
-          <Card padding="none" className="overflow-hidden">
+          <Card padding="none" className="overflow-hidden hover:!translate-y-0 shadow-none hover:shadow-xl transition-shadow">
              {documentos.length > 0 ? (
                <div className="divide-y divide-gray-50">
-                 {documentos.map((doc) => (
-                   <div key={doc.id} className="flex items-center justify-between p-6 hover:bg-gray-50 transition-colors group">
+                 {documentos.map((doc, idx) => (
+                   <div key={doc.id} 
+                     className="flex items-center justify-between p-6 hover:bg-gray-50 transition-all group animate-reveal-right"
+                     style={{ animationDelay: `${0.5 + (idx * 0.1)}s` }}
+                   >
                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 bg-navy-50 rounded-2xl flex items-center justify-center text-[#0F0A4D] group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 bg-navy-50 rounded-2xl flex items-center justify-center text-[#0F0A4D] group-hover:scale-110 group-hover:bg-[#0F0A4D] group-hover:text-white transition-all duration-500">
                           <FileText className="w-6 h-6" />
                         </div>
                         <div>
-                          <p className="font-black text-[#0F0A4D] tracking-tight">{doc.nombre}</p>
+                          <p className="font-black text-[#0F0A4D] tracking-tight group-hover:translate-x-1 transition-transform">{doc.nombre}</p>
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{new Date(doc.created_at).toLocaleDateString()}</p>
                         </div>
                      </div>
-                     <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-xs font-black text-[#0F0A4D] hover:bg-[#D4A017] hover:text-white hover:border-[#D4A017] transition-all shadow-sm">
+                     <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-xs font-black text-[#0F0A4D] hover:bg-[#D4A017] hover:text-white hover:border-[#D4A017] transition-all shadow-sm active:scale-95">
                        <Download className="w-4 h-4" />
                        <span className="hidden sm:inline">DESCARGAR</span>
                      </button>
@@ -144,7 +147,7 @@ function PortalContent() {
                  ))}
                </div>
              ) : (
-               <div className="p-20 text-center">
+               <div className="p-20 text-center animate-pulse">
                  <FileText className="w-12 h-12 text-gray-100 mx-auto mb-4" />
                  <p className="text-gray-400 font-bold italic tracking-tight">Tus documentos firmados aparecerán aquí pronto.</p>
                </div>
@@ -153,20 +156,23 @@ function PortalContent() {
         </section>
 
         {/* Payments Sidebar */}
-        <section className="space-y-6">
+        <section className="space-y-6 animate-reveal-up" style={{ animationDelay: '0.5s' }}>
            <div className="flex items-center gap-3">
              <div className="w-1.5 h-6 bg-[#D4A017] rounded-full" />
              <h2 className="text-xl font-black text-[#0F0A4D] uppercase tracking-wider">Historial de Pagos</h2>
           </div>
-          <Card padding="lg">
+          <Card padding="lg" className="hover:!translate-y-0 shadow-none hover:shadow-xl transition-shadow">
              {ingresos.length > 0 ? (
                <div className="space-y-6">
-                 {ingresos.map((pago) => (
-                   <div key={pago.id} className="flex items-start justify-between">
-                     <div className="flex gap-4">
-                        <div className="mt-1 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50" />
+                 {ingresos.map((pago, idx) => (
+                   <div key={pago.id} 
+                     className="flex items-start justify-between animate-reveal-up"
+                     style={{ animationDelay: `${0.6 + (idx * 0.1)}s` }}
+                   >
+                     <div className="flex gap-4 group">
+                        <div className="mt-1 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50 group-hover:scale-150 transition-transform" />
                         <div>
-                           <p className="text-sm font-black text-[#0F0A4D] tracking-tight">{formatCurrency(pago.monto)}</p>
+                           <p className="text-sm font-black text-[#0F0A4D] tracking-tight group-hover:text-emerald-600 transition-colors">{formatCurrency(pago.monto)}</p>
                            <p className="text-[10px] font-bold text-gray-400 uppercase">{pago.tipo || 'Pago'}</p>
                         </div>
                      </div>
@@ -175,9 +181,9 @@ function PortalContent() {
                      </p>
                    </div>
                  ))}
-                 <div className="pt-6 border-t border-gray-100 flex justify-between items-end">
+                 <div className="pt-6 border-t border-gray-100 flex justify-between items-end animate-reveal-up" style={{ animationDelay: '0.8s' }}>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Abonado</p>
-                    <p className="text-xl font-black text-emerald-600 tracking-tighter">
+                    <p className="text-xl font-black text-emerald-600 tracking-tighter group-hover:scale-110 transition-transform">
                       {formatCurrency(ingresos.reduce((acc, curr) => acc + (curr.monto || 0), 0))}
                     </p>
                  </div>

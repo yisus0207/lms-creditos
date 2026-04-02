@@ -5,6 +5,8 @@ import { ClienteService } from '@/services/cliente.service';
 import { IngresoService } from '@/services/ingreso.service';
 import type { Cliente, TipoIngreso, EstadoIngreso } from '@/types';
 import Button from '@/components/ui/Button';
+import SearchableSelect from '@/components/ui/SearchableSelect';
+import Select from '@/components/ui/Select';
 
 interface IngresoFormProps {
   onSuccess: () => void;
@@ -57,49 +59,41 @@ export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-6">
-        {/* Cliente Selection */}
-        <div className="space-y-2">
-          <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Cliente</label>
-          <select
-            required
-            value={formData.cliente_id}
-            onChange={(e) => setFormData({ ...formData, cliente_id: e.target.value })}
-            className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl text-sm font-medium text-[#0F0A4D] focus:ring-2 focus:ring-[#D4A017]/20 transition-all cursor-pointer"
-          >
-            <option value="">Seleccionar cliente...</option>
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
-            ))}
-          </select>
-        </div>
+        <SearchableSelect
+          label="Cliente"
+          placeholder="Seleccionar cliente..."
+          options={clientes.map(c => ({
+            id: c.id,
+            label: c.nombre,
+            sublabel: `Cédula: ${c.numero_documento}`
+          }))}
+          value={formData.cliente_id}
+          onChange={(val) => setFormData({ ...formData, cliente_id: val })}
+        />
 
         <div className="grid grid-cols-2 gap-6">
           {/* Tipo */}
-          <div className="space-y-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Tipo de Cobro</label>
-            <select
-              value={formData.tipo}
-              onChange={(e) => setFormData({ ...formData, tipo: e.target.value as TipoIngreso })}
-              className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl text-sm font-medium text-[#0F0A4D] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
-            >
-              <option value="viabilidad">Viabilidad</option>
-              <option value="documentos">Documentos</option>
-              <option value="comision">Comisión</option>
-            </select>
-          </div>
+          <Select
+            label="Tipo de Cobro"
+            options={[
+              { id: 'viabilidad', label: 'Viabilidad' },
+              { id: 'documentos', label: 'Documentos' },
+              { id: 'comision', label: 'Comisión' }
+            ]}
+            value={formData.tipo}
+            onChange={(val) => setFormData({ ...formData, tipo: val as TipoIngreso })}
+          />
 
           {/* Estado */}
-          <div className="space-y-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Estado</label>
-            <select
-              value={formData.estado}
-              onChange={(e) => setFormData({ ...formData, estado: e.target.value as EstadoIngreso })}
-              className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl text-sm font-medium text-[#0F0A4D] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
-            >
-              <option value="pendiente">Pendiente</option>
-              <option value="pagado">Pagado</option>
-            </select>
-          </div>
+          <Select
+            label="Estado"
+            options={[
+              { id: 'pendiente', label: 'Pendiente' },
+              { id: 'pagado', label: 'Pagado' }
+            ]}
+            value={formData.estado}
+            onChange={(val) => setFormData({ ...formData, estado: val as EstadoIngreso })}
+          />
         </div>
 
         {/* Monto & Fecha */}

@@ -21,6 +21,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
+import Select from '@/components/ui/Select';
+import ProcessFunnel from '@/components/shared/ProcessFunnel';
+import RecentActivityList from '@/components/shared/RecentActivityList';
 
 const MONTHS = [
   { id: '0', label: 'Todos los registros' },
@@ -40,7 +43,19 @@ export default function DashboardPage() {
     ingresosTotales: 0,
     ingresosPendientes: 0,
     creditosAprobados: 0,
+    tendencias: {
+      ingresos: 0,
+      clientes: 0,
+    }
   });
+  const [funnelData, setFunnelData] = useState({
+    viabilidad: 0,
+    documentos: 0,
+    banco: 0,
+    aprobado: 0,
+    rechazado: 0
+  });
+  const [activities, setActivities] = useState<any[]>([]);
   const [incomeData, setIncomeData] = useState<any[]>([]);
   const [statusData, setStatusData] = useState<any[]>([]);
 
@@ -54,13 +69,75 @@ export default function DashboardPage() {
           IngresoService.getAll()
         ]);
 
+        const now = new Date();
+        const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const firstDayPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+        // Previous month stats for trends
+        const prevMonthIngresos = ingresos.filter(i => {
+           const d = new Date(i.fecha);
+           return d >= firstDayPrevMonth && d < firstDayThisMonth;
+        }).reduce((acc, curr) => acc + curr.monto, 0);
+
+        const currentMonthIngresos = ingresos.filter(i => {
+           const d = new Date(i.fecha);
+           return d >= firstDayThisMonth;
+        }).reduce((acc, curr) => acc + curr.monto, 0);
+
+        const tendenciaIngresos = prevMonthIngresos > 0 
+          ? Math.round(((currentMonthIngresos - prevMonthIngresos) / prevMonthIngresos) * 100) 
+          : 0;
+
         // KPI Stats
         setStats({
           totalClientes: clientes.length,
           ingresosTotales: summary.total,
           ingresosPendientes: summary.pendiente,
           creditosAprobados: clientes.filter(c => c.estado === 'aprobado').length,
+          tendencias: {
+            ingresos: tendenciaIngresos,
+            clientes: Math.round((clientes.filter(c => new Date(c.created_at) >= firstDayThisMonth).length / (clientes.length || 1)) * 100)
+          }
         });
+
+        // Funnel Distribution
+        const statusMap = clientes.reduce((acc: any, curr) => {
+          const status = curr.estado || 'viabilidad';
+          acc[status] = (acc[status] || 0) + 1;
+          return acc;
+        }, { viabilidad: 0, documentos: 0, banco: 0, aprobado: 0, rechazado: 0 });
+
+        setFunnelData(statusMap);
+
+        // Activity Feed Synthesis
+        const latestClients = clientes.slice(0, 3).map(c => ({
+          id: `c-${c.id}`,
+          type: 'cliente',
+          title: 'Nuevo Cliente',
+          description: `${c.nombre} ha iniciado el proceso.`,
+          timestamp: 'Reciente'
+        }));
+
+        const latestIngresos = ingresos.slice(0, 3).map(i => ({
+          id: `i-${i.id}`,
+          type: 'pago',
+          title: 'Recaudo Registrado',
+          description: `Abono de ${formatCurrency(i.monto)} por ${i.cliente_nombre}`,
+          timestamp: 'Hoy'
+        }));
+
+        const statusUpdates = clientes
+          .filter(c => c.estado !== 'viabilidad')
+          .slice(0, 2)
+          .map(c => ({
+            id: `s-${c.id}`,
+            type: 'estado',
+            title: 'Progreso de Crédito',
+            description: `${c.nombre} pasó a etapa ${c.estado?.toUpperCase()}`,
+            timestamp: 'Ayer'
+          }));
+
+        setActivities([...latestIngresos, ...latestClients, ...statusUpdates].slice(0, 6));
 
         // Income by Type (Chart 1)
         const typeMap = ingresos.reduce((acc: any, curr) => {
@@ -74,13 +151,7 @@ export default function DashboardPage() {
           value 
         })));
 
-        // Status Distribution (Chart 2)
-        const statusMap = clientes.reduce((acc: any, curr) => {
-          const status = curr.estado || 'viabilidad';
-          acc[status] = (acc[status] || 0) + 1;
-          return acc;
-        }, {});
-
+        // Donut Data
         const colors: any = { 
           viabilidad: '#D4A017', 
           documentos: '#0F0A4D', 
@@ -114,15 +185,17 @@ export default function DashboardPage() {
         title="Dashboard"
         description="Resumen general del sistema y métricas clave en tiempo real."
         actions={
-          <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-2xl px-4 py-2 shadow-sm">
-            <Calendar className="w-4 h-4 text-[#D4A017]" />
-            <select
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 text-[#0F0A4D]/40">
+              <Calendar className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#0F0A4D]/40">Período:</span>
+            </div>
+            <Select
+              className="min-w-[180px]"
+              options={MONTHS}
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-transparent border-none text-sm font-bold text-[#0F0A4D] focus:ring-0 cursor-pointer"
-            >
-              {MONTHS.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
-            </select>
+              onChange={setSelectedMonth}
+            />
           </div>
         }
       />
@@ -131,9 +204,9 @@ export default function DashboardPage() {
         <StatCard
           title="Ingresos Totales"
           value={formatCurrency(stats.ingresosTotales)}
-          subtitle="Recaudado este mes"
+          subtitle="Recaudado acumulado"
           icon={<DollarSign className="w-6 h-6" />}
-          trend="up"
+          trend={stats.tendencias.ingresos > 0 ? 'up' : 'neutral'}
           loading={loading}
         />
         <StatCard
@@ -147,7 +220,7 @@ export default function DashboardPage() {
         <StatCard
           title="Clientes Activos"
           value={stats.totalClientes}
-          subtitle="Sincronizados"
+          subtitle={`+${stats.tendencias.clientes}% este mes`}
           icon={<Users className="w-6 h-6" />}
           trend="up"
           loading={loading}
@@ -162,72 +235,107 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Income Chart */}
-        <Card hasAccent padding="lg">
-          <h3 className="text-xl font-black text-[#0F0A4D] mb-8 flex items-center gap-3">
-            <div className="p-2 bg-[#D4A017]/10 rounded-lg">
-              <BarChart3 className="w-5 h-5 text-[#D4A017]" />
-            </div>
-            Ingresos por Tipo
-          </h3>
-          <div className="h-[300px] min-h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              {incomeData.length > 0 ? (
-                <BarChart data={incomeData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#94A3B8', fontSize: 10, fontWeight: 900 }}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#94A3B8', fontSize: 10, fontWeight: 700 }}
-                    tickFormatter={(value) => formatCurrency(value)}
-                    width={80}
-                  />
-                  <RechartsTooltip
-                    cursor={{ fill: '#F8FAFC' }}
-                    contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '16px' }}
-                    formatter={(value: any) => [formatCurrency(value), 'Monto']}
-                  />
-                  <Bar
-                    dataKey="value"
-                    fill="#D4A017"
-                    radius={[12, 12, 0, 0]}
-                    barSize={40}
-                  />
-                </BarChart>
-              ) : (
-                <div className="flex items-center justify-center h-full text-xs text-gray-400 font-bold uppercase tracking-widest italic">Cargando métricas...</div>
-              )}
-            </ResponsiveContainer>
+      {/* Funnel Section */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+             <div className="w-1.5 h-6 bg-[#D4A017] rounded-full" />
+             <h2 className="text-xl font-black text-[#0F0A4D] uppercase tracking-wider">Flujo de Operación</h2>
           </div>
-        </Card>
- 
-        {/* Status Donut Chart */}
-        <Card padding="lg">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-full border border-gray-100">Cierre de mes: 28 días</p>
+        </div>
+        <ProcessFunnel data={funnelData} />
+      </section>
+
+      {/* Main Insights Grid */}
+      <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
+        {/* Income Chart */}
+        <div className="lg:col-span-2">
+          <Card hasAccent padding="lg" className="h-full">
+            <h3 className="text-xl font-black text-[#0F0A4D] mb-8 flex items-center gap-3">
+              <div className="p-2 bg-[#D4A017]/10 rounded-lg">
+                <BarChart3 className="w-5 h-5 text-[#D4A017]" />
+              </div>
+              Análisis Portafolio de Ingresos
+            </h3>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                {incomeData.length > 0 ? (
+                  <BarChart data={incomeData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#94A3B8', fontSize: 10, fontWeight: 900 }}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#94A3B8', fontSize: 10, fontWeight: 700 }}
+                      tickFormatter={(value) => formatCurrency(value)}
+                      width={80}
+                    />
+                    <RechartsTooltip
+                      cursor={{ fill: '#F8FAFC' }}
+                      contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '16px' }}
+                      formatter={(value: any) => [formatCurrency(value), 'Monto']}
+                    />
+                    <Bar
+                      dataKey="value"
+                      fill="#D4A017"
+                      radius={[12, 12, 0, 0]}
+                      barSize={40}
+                    />
+                  </BarChart>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-xs text-gray-400 font-bold uppercase tracking-widest italic">Generando reportes financieros...</div>
+                )}
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
+
+        {/* Recent Activity */}
+        <Card padding="lg" className="h-full">
           <h3 className="text-xl font-black text-[#0F0A4D] mb-8 flex items-center gap-3">
             <div className="p-2 bg-[#D4A017]/10 rounded-lg">
-              <PieChartIcon className="w-5 h-5 text-[#D4A017]" />
+              <Briefcase className="w-5 h-5 text-[#D4A017]" />
             </div>
-            Distribución de Cartera
+            Actividad Reciente
           </h3>
-          <div className="h-[300px] min-h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              {statusData.length > 0 ? (
+          <RecentActivityList activities={activities} loading={loading} />
+        </Card>
+      </div>
+
+      {/* Distribution Donut (Secondary) */}
+      <section className="animate-reveal-up" style={{ animationDelay: '0.8s' }}>
+        <Card padding="lg">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1">
+              <h3 className="text-xl font-black text-[#0F0A4D] mb-2 flex items-center gap-3">
+                Distribución Estratégica
+              </h3>
+              <p className="text-sm text-gray-400 font-medium mb-6">Perspectiva porcentual de la madurez de la cartera actual.</p>
+              <div className="grid grid-cols-2 gap-4">
+                 {statusData.map((s, i) => (
+                   <div key={i} className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                      <span className="text-[10px] font-black text-[#0F0A4D] uppercase tracking-wider">{s.name}: {s.value}%</span>
+                   </div>
+                 ))}
+              </div>
+            </div>
+            <div className="h-[200px] w-[200px] shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={statusData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={70}
-                    outerRadius={100}
+                    innerRadius={60}
+                    outerRadius={80}
                     paddingAngle={8}
                     dataKey="value"
                     stroke="none"
@@ -236,27 +344,12 @@ export default function DashboardPage() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <RechartsTooltip 
-                    contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: any) => [`${value}%`, 'Porcentaje']}
-                  />
-                  <Legend
-                    verticalAlign="middle"
-                    align="right"
-                    layout="vertical"
-                    iconType="circle"
-                    formatter={(value, entry: any) => (
-                      <span className="text-xs font-black text-[#0F0A4D] uppercase tracking-wider ml-2">{value}</span>
-                    )}
-                  />
                 </PieChart>
-              ) : (
-                <div className="flex items-center justify-center h-full text-xs text-gray-400 font-bold uppercase tracking-widest italic">Sincronizando estados...</div>
-              )}
-            </ResponsiveContainer>
+              </ResponsiveContainer>
+            </div>
           </div>
         </Card>
-      </div>
+      </section>
     </div>
   );
 }
