@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import './globals.css';
+import PWAInstallPrompt from '@/components/shared/PWAInstallPrompt';
 
 const geist = Geist({
   variable: '--font-geist-sans',
@@ -35,7 +36,10 @@ export default function RootLayout({
       suppressHydrationWarning
       data-scroll-behavior="smooth"
     >
-      <body className="min-h-full" suppressHydrationWarning>{children}</body>
+      <body className="min-h-full" suppressHydrationWarning>
+        {children}
+        <PWAInstallPrompt />
+      </body>
     </html>
   );
 }

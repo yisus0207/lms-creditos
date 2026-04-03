@@ -18,13 +18,31 @@ export default function DocumentPreviewModal({ documento, onClose }: DocumentPre
       title={`Vista Previa: ${documento?.tipo_documento}`}
       maxWidth="max-w-5xl"
     >
-      <div className="bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 h-[70vh] relative group/preview">
+      <div className="bg-gray-100 rounded-2xl overflow-hidden border border-gray-200 h-[60vh] sm:h-[70vh] relative group/preview">
         {documento?.url_archivo ? (
-          <iframe 
-            src={`${documento.url_archivo}#toolbar=0`} 
-            className="w-full h-full"
-            title="Document Preview"
-          />
+          (() => {
+            const isImage = /\.(jpg|jpeg|png|webp|gif|avif)($|\?)/i.test(documento.url_archivo);
+            
+            if (isImage) {
+              return (
+                <div className="w-full h-full flex items-center justify-center p-4 bg-white/50">
+                  <img 
+                    src={documento.url_archivo} 
+                    alt={documento.tipo_documento}
+                    className="max-w-full max-h-full object-contain drop-shadow-2xl animate-in zoom-in-95 duration-500"
+                  />
+                </div>
+              );
+            }
+            
+            return (
+              <iframe 
+                src={`${documento.url_archivo}#toolbar=0&navpanes=0&scrollbar=0`} 
+                className="w-full h-full border-none inset-0"
+                title="Document Preview"
+              />
+            );
+          })()
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4">
             <Sparkles className="w-12 h-12 opacity-20" />
