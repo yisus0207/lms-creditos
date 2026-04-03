@@ -14,15 +14,34 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
 
-  // Check if already logged in
+  // Smart Redirect based on Role
   useEffect(() => {
-    const checkUser = async () => {
+    const checkRedirect = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      if (!session) return;
+
+      const user = session.user;
+      const isAdmin = user.email?.endsWith('@lmscreditos.com');
+
+      if (isAdmin) {
         router.push('/dashboard');
+      } else {
+        // Find client by user_id
+        const { data: client } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (client) {
+          router.push('/portal');
+        } else {
+          // If not a client, treat as Admin/Staff fallback
+          router.push('/dashboard'); 
+        }
       }
     };
-    checkUser();
+    checkRedirect();
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -31,19 +50,57 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      let loginEmail = email;
+
+      // 1. Check if the input is a Cédula (numeric)
+      const isCedula = /^\d+$/.test(email.replace(/\./g, '').trim());
+      
+      if (isCedula) {
+        const cleanCedula = email.replace(/\./g, '').trim();
+        const { data: clientData, error: clientError } = await supabase
+          .from('clientes')
+          .select('email')
+          .eq('numero_documento', cleanCedula)
+          .single();
+        
+        if (clientError || !clientData) {
+          throw new Error('Cédula no registrada. Por favor, regístrate primero.');
+        }
+        loginEmail = clientData.email;
+      }
+
+      // 2. Perform Supabase Login
       const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginEmail,
         password,
       });
 
       if (authError) {
         throw new Error(authError.message === 'Invalid login credentials' 
-          ? 'Credenciales incorrectas. Verifica tu correo y contraseña.' 
+          ? 'Credenciales o contraseña incorrectas.' 
           : authError.message);
       }
 
       if (data.session) {
-        router.push('/dashboard');
+        const isAdmin = loginEmail.endsWith('@lmscreditos.com');
+        
+        if (isAdmin) {
+          router.push('/dashboard');
+        } else {
+          // Verify if they are a client
+          const { data: client } = await supabase
+            .from('clientes')
+            .select('id')
+            .eq('user_id', data.session.user.id)
+            .single();
+          
+          if (client) {
+            router.push('/portal');
+          } else {
+            // Default to dashboard for non-client registered users
+            router.push('/dashboard');
+          }
+        }
         router.refresh();
       }
     } catch (err: any) {
@@ -133,11 +190,11 @@ export default function LoginPage() {
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within/input:text-[#D4A017] transition-colors" />
                 <input
                   required
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@lmscreditos.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/10 focus:outline-none focus:border-[#D4A017]/50 focus:ring-4 focus:ring-[#D4A017]/5 transition-all"
+                  placeholder="Cédula o Correo electrónico"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[#D4A017]/50 focus:ring-4 focus:ring-[#D4A017]/5 transition-all"
                 />
               </div>
             </div>
@@ -178,6 +235,16 @@ export default function LoginPage() {
             >
               {loading ? 'Procesando...' : '¿Olvidaste tu contraseña? Recuperar aquí'}
             </button>
+
+            <div className="mt-8 pt-8 border-t border-white/5">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-4">¿Nuevo en LMS?</p>
+              <Button 
+                onClick={() => router.push('/register')}
+                className="w-full h-12 bg-transparent border border-white/10 hover:bg-white/5 text-[#D4A017] rounded-xl font-black text-[10px] uppercase tracking-[0.2em]"
+              >
+                CREAR MI CUENTA
+              </Button>
+            </div>
           </div>
         </div>
 

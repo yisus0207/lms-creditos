@@ -38,8 +38,10 @@ export interface Cliente {
   direccion: string;
   empresa?: string;
   cargo?: string;
-  estado?: EstadoOperacion; // Added for UI sync
-  total_generado?: number;   // Added for UI sync
+  user_id?: string;            // Link to Supabase Auth
+  monto_total_credito?: number; // For debt calculations
+  estado?: EstadoOperacion; 
+  total_generado?: number;   
   created_at: string;
 }
 
