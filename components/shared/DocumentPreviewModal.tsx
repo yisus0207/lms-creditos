@@ -25,11 +25,11 @@ export default function DocumentPreviewModal({ documento, onClose }: DocumentPre
             
             if (isImage) {
               return (
-                <div className="w-full h-full flex items-center justify-center p-4 bg-white/50">
+                <div className="w-full h-full flex items-center justify-center p-4 bg-white/50 cursor-zoom-in overflow-auto">
                   <img 
                     src={documento.url_archivo} 
                     alt={documento.tipo_documento}
-                    className="max-w-full max-h-full object-contain drop-shadow-2xl animate-in zoom-in-95 duration-500"
+                    className="max-w-full max-h-full object-contain drop-shadow-2xl animate-in zoom-in-95 duration-500 hover:scale-150 transition-transform cursor-zoom-out"
                   />
                 </div>
               );
@@ -37,7 +37,7 @@ export default function DocumentPreviewModal({ documento, onClose }: DocumentPre
             
             return (
               <iframe 
-                src={`${documento.url_archivo}#toolbar=0&navpanes=0&scrollbar=0`} 
+                src={documento.url_archivo} 
                 className="w-full h-full border-none inset-0"
                 title="Document Preview"
               />
@@ -50,9 +50,9 @@ export default function DocumentPreviewModal({ documento, onClose }: DocumentPre
           </div>
         )}
         
-        <div className="absolute top-4 right-4 animate-in fade-in duration-500">
-          <div className="px-4 py-2 bg-white/80 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-[#0F0A4D] border border-white/20 shadow-xl">
-            Modo de Lectura Segura
+        <div className="absolute top-4 left-4 animate-in fade-in duration-500">
+          <div className="px-4 py-2 bg-[#D4A017]/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-[#0F0A4D] border border-[#D4A017]/20 shadow-xl">
+             Modo de Análisis Experto
           </div>
         </div>
       </div>
