@@ -11,6 +11,7 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import DocumentPreviewModal from '@/components/shared/DocumentPreviewModal';
 import ScannerModal from '@/components/shared/ScannerModal';
+import DeleteConfirmModal from '@/components/shared/DeleteConfirmModal';
 import { Eye, Download, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -28,6 +29,8 @@ export default function ClienteDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDoc, setSelectedDoc] = useState<Documento | null>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Documento | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchDetail = useCallback(async () => {
     if (!id) return;
@@ -41,14 +44,16 @@ export default function ClienteDetailPage() {
     fetchDetail();
   }, [fetchDetail]);
 
-  const handleDeleteDocument = async (doc: Documento) => {
-    if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente el documento "${doc.tipo_documento}"?`)) return;
+  const handleDeleteDocument = async () => {
+    if (!deleteTarget) return;
 
+    setIsDeleting(true);
     try {
-      if (doc.url_archivo) {
-        const urlParts = doc.url_archivo.split('/documentos/');
-        if (urlParts.length === 2) {
-          const filePath = urlParts[1];
+      if (deleteTarget.url_archivo) {
+        // Extraer el path del archivo de forma robusta (todo lo que va después del bucket 'documentos/')
+        const match = deleteTarget.url_archivo.match(/\/storage\/v1\/object\/public\/documentos\/(.+)$/);
+        if (match && match[1]) {
+          const filePath = decodeURIComponent(match[1]);
           const { error: storageError } = await supabase.storage
             .from('documentos')
             .remove([filePath]);
@@ -59,14 +64,17 @@ export default function ClienteDetailPage() {
       const { error: dbError } = await supabase
         .from('documentos')
         .delete()
-        .eq('id', doc.id);
+        .eq('id', deleteTarget.id);
 
       if (dbError) throw dbError;
       
+      setDeleteTarget(null);
       fetchDetail();
     } catch (err) {
       console.error(err);
       alert('Error eliminando el documento');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -253,7 +261,7 @@ export default function ClienteDetailPage() {
                         <Download className="w-4.5 h-4.5" />
                       </button>
                       <button 
-                        onClick={() => handleDeleteDocument(doc)}
+                        onClick={() => setDeleteTarget(doc)}
                         className="p-2 text-rose-500 bg-rose-50/80 hover:bg-rose-100 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5" 
                         title="Eliminar"
                       >
@@ -306,6 +314,19 @@ export default function ClienteDetailPage() {
         onClose={() => setIsScannerOpen(false)}
         onSuccess={fetchDetail}
         defaultClienteId={cliente.id}
+      />
+
+      <DeleteConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteDocument}
+        isLoading={isDeleting}
+        title="¿Eliminar documento?"
+        description={
+          <>
+            ¿Estás seguro de que deseas eliminar permanentemente el documento <span className="font-bold text-[#0B1E3F]">"{deleteTarget?.tipo_documento}"</span>? Esta acción es irreversible.
+          </>
+        }
       />
     </div>
   );

@@ -95,8 +95,30 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
       for (let i = 0; i < images.length; i++) {
         if (i > 0) pdf.addPage();
         
-        // Simple A4 fill (optimized for performance)
-        pdf.addImage(images[i], 'JPEG', 10, 10, pageWidth - 20, pageHeight - 20);
+        // Cargar imagen para obtener dimensiones reales y evitar estiramiento
+        const imgProps = await new Promise<{w: number, h: number}>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve({ w: img.width, h: img.height });
+          img.src = images[i];
+        });
+
+        const imgRatio = imgProps.w / imgProps.h;
+        const maxW = pageWidth - 20;
+        const maxH = pageHeight - 20;
+        
+        let finalW = maxW;
+        let finalH = maxW / imgRatio;
+
+        if (finalH > maxH) {
+          finalH = maxH;
+          finalW = maxH * imgRatio;
+        }
+
+        // Centrado en la página
+        const x = (pageWidth - finalW) / 2;
+        const y = (pageHeight - finalH) / 2;
+
+        pdf.addImage(images[i], 'JPEG', x, y, finalW, finalH);
       }
 
       const pdfBlob = pdf.output('blob');
@@ -251,7 +273,7 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
                       placeholder="Escribe el nombre del documento..."
                       value={customDocType}
                       onChange={(e) => setCustomDocType(e.target.value)}
-                      className="w-full bg-white border-2 border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold text-[#0F0A4D] focus:outline-none focus:border-[#D4A017] transition-colors"
+                      className="w-full h-16 bg-white border-2 border-gray-100 rounded-[22px] px-6 text-sm font-black text-[#0F0A4D] focus:outline-none focus:border-[#D4A017] focus:ring-4 focus:ring-amber-400/5 transition-all"
                       autoFocus
                     />
                   </div>

@@ -78,8 +78,7 @@ export default function DocumentUploadZone({ clienteId, onSuccess }: DocumentUpl
       const sanitizedType = sanitizeName(finalName);
       
       // Rename file for storage: [TIPO]_[TIMESTAMP].[EXT]
-      const fileName = `${clienteId}/${sanitizedType}_${Date.now()}.${fileExt}`;
-      const filePath = `documentos/${fileName}`;
+      const filePath = `${clienteId}/${sanitizedType}_${Date.now()}.${fileExt}`;
 
       // 1. Upload to Supabase Storage
       const { error: storageError } = await supabase!.storage

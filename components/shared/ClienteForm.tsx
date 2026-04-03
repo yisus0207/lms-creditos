@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ClienteService } from '@/services/cliente.service';
-import Button from '@/components/ui/Button';
 import Select from '@/components/ui/Select';
 
 interface ClienteFormProps {
@@ -75,8 +74,8 @@ export default function ClienteForm({ onSuccess }: ClienteFormProps) {
     }
   };
 
-  const inputClasses = "w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-5 py-4 text-sm font-medium text-[#0F0A4D] transition-all focus:bg-white focus:border-[#D4A017] focus:outline-none focus:ring-4 focus:ring-[#D4A017]/5 placeholder:text-gray-300";
-  const labelClasses = "block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 px-1";
+  const inputClasses = "w-full h-16 rounded-[24px] border-2 border-gray-100 bg-gray-50/40 px-6 text-sm font-black text-[#0F0A4D] transition-all focus:bg-white focus:border-[#D4A017] focus:outline-none focus:ring-4 focus:ring-[#D4A017]/5 placeholder:text-gray-300";
+  const labelClasses = "block text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-[0.2em] mb-3 px-2";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -191,10 +190,10 @@ export default function ClienteForm({ onSuccess }: ClienteFormProps) {
 
       {/* Submit */}
       <div className="pt-6">
-        <Button 
+        <button 
           type="submit" 
           disabled={loading} 
-          className="w-full h-16 bg-[#D4A017] hover:bg-[#B8860B] text-white rounded-2xl font-black text-lg shadow-xl shadow-amber-100 transition-all active:scale-95"
+          className="w-full h-16 bg-gradient-to-r from-[#D4A017] to-amber-400 text-white rounded-[24px] font-black text-lg shadow-xl shadow-amber-100 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3"
         >
           {loading ? (
             <div className="flex items-center gap-3">
@@ -202,7 +201,7 @@ export default function ClienteForm({ onSuccess }: ClienteFormProps) {
               <span>Guardando...</span>
             </div>
           ) : 'Registrar Cliente'}
-        </Button>
+        </button>
       </div>
     </form>
   );

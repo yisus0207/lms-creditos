@@ -57,8 +57,8 @@ export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="grid gap-8">
         <SearchableSelect
           label="Cliente"
           placeholder="Seleccionar cliente..."
@@ -98,43 +98,48 @@ export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
 
         {/* Monto & Fecha */}
         <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Monto ($)</label>
-            <input
-              type="number"
-              required
-              placeholder="0.00"
-              value={formData.monto}
-              onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
-              className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl text-sm font-medium text-[#0F0A4D] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
-            />
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-widest px-1 ml-1">Monto ($)</label>
+            <div className="relative group">
+              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4A017] font-black pointer-events-none group-focus-within:scale-110 transition-transform">$</span>
+              <input
+                type="number"
+                required
+                placeholder="0.00"
+                value={formData.monto}
+                onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
+                className="w-full h-16 pl-12 pr-6 bg-gray-50/50 border-2 border-gray-100 rounded-[24px] text-sm font-black text-[#0F0A4D] focus:ring-4 focus:ring-amber-400/5 focus:border-[#D4A017] focus:bg-white outline-none transition-all"
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-black text-gray-400 uppercase tracking-widest px-1">Fecha</label>
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-widest px-1 ml-1">Fecha</label>
             <input
               type="date"
               required
               value={formData.fecha}
               onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
-              className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl text-sm font-medium text-[#0F0A4D] focus:ring-2 focus:ring-[#D4A017]/20 transition-all"
+              className="w-full h-16 px-6 bg-gray-50/50 border-2 border-gray-100 rounded-[24px] text-sm font-black text-[#0F0A4D] focus:ring-4 focus:ring-amber-400/5 focus:border-[#D4A017] focus:bg-white outline-none transition-all"
             />
           </div>
         </div>
       </div>
 
       <div className="flex gap-4 pt-4">
-        <Button
+        <button
           type="submit"
-          className="flex-1 py-4 rounded-2xl"
-          loading={loading}
+          disabled={loading}
+          className="flex-[2] h-14 rounded-[22px] bg-gradient-to-r from-[#D4A017] to-amber-400 text-white font-black hover:from-[#B8860B] hover:to-[#D4A017] transition-all shadow-xl shadow-amber-100 disabled:opacity-60 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
         >
-          Guardar Registro
-        </Button>
+          {loading ? (
+            <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full" />
+          ) : 'Guardar Registro'}
+        </button>
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 py-4 px-6 border border-gray-100 rounded-2xl text-sm font-bold text-gray-400 hover:bg-gray-50 transition-all"
+          className="flex-1 h-14 rounded-[22px] bg-gray-100 text-gray-500 font-black hover:bg-gray-200 transition-all hover:scale-[1.02] active:scale-95 px-4"
         >
           Cancelar
         </button>

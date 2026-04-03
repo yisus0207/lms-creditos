@@ -11,7 +11,8 @@ import {
   User,
   Minimize2,
   Trash2,
-  Zap
+  Zap,
+  Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { alexaService, ChatMessage } from '@/services/alexa.service';
@@ -141,7 +142,24 @@ export default function AlexaAssistant() {
                       ? "bg-white/10 text-white rounded-tr-none" 
                       : "bg-[#1A1560] text-white/90 border border-white/5 rounded-tl-none"
                   )}>
-                    {m.content}
+                    {/* Renderizado de mensaje con soporte para botones de descarga */}
+                    {m.content.split('[[DOWNLOAD:').map((part, index) => {
+                      if (index === 0) return part;
+                      const [rawUrl, ...rest] = part.split(']]');
+                      const url = rawUrl.trim();
+                      return (
+                        <div key={index} className="mt-3">
+                          <button
+                            onClick={() => window.open(url, '_blank')}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4A017] to-amber-400 text-[#0F0A4D] font-black rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg text-xs"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Descargar Documento
+                          </button>
+                          {rest.join(']]')}
+                        </div>
+                      );
+                    })}
                   </div>
                 </motion.div>
               ))}
@@ -196,7 +214,7 @@ export default function AlexaAssistant() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-16 h-16 rounded-full flex items-center justify-center text-[#0F0A4D] transition-colors pointer-events-auto relative shadow-[0_15px_25px_rgba(212,160,23,0.3),_inset_-4px_-6px_12px_rgba(0,0,0,0.3),_inset_4px_4px_12px_rgba(255,255,255,0.7)] bg-gradient-to-br from-[#FFE866] via-[#D4A017] to-[#B8860B] overflow-hidden group"
+        className="w-16 h-16 rounded-full flex items-center justify-center text-[#0F0A4D] transition-colors pointer-events-auto relative shadow-[0_15px_25px_rgba(212,160,23,0.3),_inset_-4px_-6px_12px_rgba(0,0,0,0.3),_inset_4px_4px_12px_rgba(255,255,255,0.7)] bg-gradient-to-br from-[#FFE866] via-[#D4A017] to-[#B8860B] overflow-hidden group cursor-pointer"
       >
         {/* Brillo 3D en la parte superior izquierda */}
         <div className="absolute top-1.5 left-2.5 w-6 h-3.5 bg-white/60 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />

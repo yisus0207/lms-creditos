@@ -8,6 +8,8 @@ import { SubsidioService } from '@/services/subsidio.service';
 import { ClienteService } from '@/services/cliente.service';
 import type { Subsidio, Cliente } from '@/types';
 import UIModal from '@/components/ui/UIModal';
+import SearchableSelect from '@/components/ui/SearchableSelect';
+import DeleteConfirmModal from '@/components/shared/DeleteConfirmModal';
 import Link from 'next/link';
 
 const formatCurrency = (n: number = 0) =>
@@ -27,40 +29,7 @@ function StatCard({ label, value, color, icon }: { label: string; value: string;
   );
 }
 
-// Custom delete confirm modal
-function DeleteConfirmModal({ name, onConfirm, onCancel }: { name: string; onConfirm: () => void; onCancel: () => void }) {
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative bg-white rounded-[36px] p-10 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200">
-        <button onClick={onCancel} className="absolute top-5 right-5 p-2 text-gray-300 hover:text-gray-600 transition-colors rounded-full">
-          <X className="w-5 h-5" />
-        </button>
-        <div className="w-16 h-16 rounded-3xl bg-rose-50 flex items-center justify-center mx-auto mb-6">
-          <TriangleAlert className="w-8 h-8 text-rose-500" />
-        </div>
-        <h3 className="text-xl font-black text-[#0B1E3F] text-center mb-2">¿Eliminar subsidio?</h3>
-        <p className="text-sm text-gray-400 text-center mb-8">
-          Se eliminará el subsidio de <span className="font-bold text-[#0B1E3F]">{name}</span> junto con todos sus aportes. Esta acción no se puede deshacer.
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-3.5 rounded-2xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-3.5 rounded-2xl bg-rose-500 text-white font-bold hover:bg-rose-600 transition-all shadow-lg shadow-rose-100"
-          >
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 export default function SubsidiosPage() {
   const [subsidios, setSubsidios] = useState<Subsidio[]>([]);
@@ -248,25 +217,23 @@ export default function SubsidiosPage() {
 
       {/* Create Modal */}
       <UIModal isOpen={openModal} onClose={() => setOpenModal(false)} title="Registrar Nuevo Subsidio">
-        <form onSubmit={handleCreate} className="space-y-6 p-1">
+        <form onSubmit={handleCreate} className="space-y-8 p-1">
+          <SearchableSelect
+            label="Cliente"
+            placeholder="Seleccionar cliente..."
+            value={formClienteId}
+            onChange={setFormClienteId}
+            options={clientes.map(c => ({
+              id: c.id,
+              label: c.nombre,
+              sublabel: c.numero_documento
+            }))}
+          />
+          
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Cliente</label>
-            <select
-              value={formClienteId}
-              onChange={e => setFormClienteId(e.target.value)}
-              required
-              className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl text-sm bg-white focus:ring-2 focus:ring-[#D4A017]/20 focus:border-[#D4A017] outline-none transition-all"
-            >
-              <option value="">Seleccionar cliente...</option>
-              {clientes.map(c => (
-                <option key={c.id} value={c.id}>{c.nombre} — {c.numero_documento}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Valor Total del Subsidio</label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+            <label className="block text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-widest mb-3">Valor Total del Subsidio</label>
+            <div className="relative group">
+              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[#D4A017] font-black text-lg group-focus-within:scale-110 transition-transform">$</span>
               <input
                 type="number"
                 value={formValor}
@@ -274,26 +241,38 @@ export default function SubsidiosPage() {
                 placeholder="0"
                 required
                 min={0}
-                className="w-full pl-9 pr-4 py-3.5 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#D4A017]/20 focus:border-[#D4A017] outline-none transition-all"
+                className="w-full h-16 pl-12 pr-6 bg-gray-50 border-2 border-gray-100 rounded-[24px] text-sm font-black text-[#0F0A4D] focus:ring-4 focus:ring-amber-400/5 focus:border-[#D4A017] focus:bg-white outline-none transition-all"
               />
             </div>
           </div>
+
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Descripción <span className="text-gray-300 normal-case font-medium tracking-normal">(opcional)</span></label>
+            <label className="block text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-widest mb-3">Descripción <span className="text-gray-300 normal-case font-medium tracking-normal">(opcional)</span></label>
             <textarea
               value={formDescripcion}
               onChange={e => setFormDescripcion(e.target.value)}
               placeholder="Detalles del subsidio..."
               rows={3}
-              className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-[#D4A017]/20 focus:border-[#D4A017] outline-none transition-all resize-none"
+              className="w-full px-6 py-5 bg-gray-50/50 border-2 border-gray-100 rounded-[24px] text-sm font-bold text-[#0F0A4D] focus:ring-4 focus:ring-amber-400/5 focus:border-[#D4A017] focus:bg-white outline-none transition-all resize-none shadow-inner-sm"
             />
           </div>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setOpenModal(false)} className="flex-1 py-3.5 rounded-2xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all">
+
+          <div className="flex gap-4 pt-4">
+            <button 
+              type="button" 
+              onClick={() => setOpenModal(false)} 
+              className="flex-1 h-14 rounded-[24px] bg-gray-100 text-gray-500 font-black hover:bg-gray-200 transition-all hover:scale-[1.02] active:scale-95"
+            >
               Cancelar
             </button>
-            <button type="submit" disabled={saving} className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-[#D4A017] to-amber-400 text-white font-black hover:from-[#B8860B] hover:to-[#D4A017] transition-all shadow-lg shadow-amber-100 disabled:opacity-60">
-              {saving ? 'Guardando...' : 'Registrar Subsidio'}
+            <button 
+              type="submit" 
+              disabled={saving} 
+              className="flex-1 h-14 rounded-[24px] bg-gradient-to-r from-[#D4A017] to-amber-400 text-white font-black hover:from-[#B8860B] hover:to-[#D4A017] transition-all shadow-xl shadow-amber-100 disabled:opacity-60 hover:scale-[1.02] active:scale-95 flex items-center justify-center"
+            >
+              {saving ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full" />
+              ) : 'Registrar Subsidio'}
             </button>
           </div>
         </form>
@@ -302,9 +281,15 @@ export default function SubsidiosPage() {
       {/* Delete Confirm Modal */}
       {deleteTarget && (
         <DeleteConfirmModal
-          name={deleteTarget.cliente_nombre || ''}
+          isOpen={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
           onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeleteTarget(null)}
+          title="¿Eliminar subsidio?"
+          description={
+            <>
+              Se eliminará el subsidio de <span className="font-bold text-[#0B1E3F]">{deleteTarget.cliente_nombre}</span> y todos sus aportes. Esta acción es irreversible.
+            </>
+          }
         />
       )}
     </div>
