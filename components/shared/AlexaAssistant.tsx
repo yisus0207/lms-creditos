@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Sparkles, 
-  Send, 
-  X, 
-  MessageCircle, 
-  Bot, 
+import {
+  Sparkles,
+  Send,
+  X,
+  MessageCircle,
+  Bot,
   User,
   Minimize2,
   Trash2,
@@ -89,7 +89,7 @@ export default function AlexaAssistant() {
             </div>
 
             {/* Chat area */}
-            <div 
+            <div
               ref={scrollRef}
               className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"
             >
@@ -99,7 +99,7 @@ export default function AlexaAssistant() {
                     <Sparkles className="w-8 h-8 text-[#D4A017] opacity-40" />
                   </div>
                   <p className="text-white/80 font-medium text-sm">
-                    ¡Hola! Soy Alexa. <br/>
+                    ¡Hola! Soy Alexa. <br />
                     <span className="text-white/40 text-xs font-normal">¿En qué puedo ayudarte hoy con la gestión de créditos?</span>
                   </p>
                   <div className="grid grid-cols-1 gap-2 w-full">
@@ -138,8 +138,8 @@ export default function AlexaAssistant() {
                   </div>
                   <div className={cn(
                     "max-w-[80%] p-3 rounded-2xl text-[13px] leading-relaxed shadow-lg",
-                    m.role === 'user' 
-                      ? "bg-white/10 text-white rounded-tr-none" 
+                    m.role === 'user'
+                      ? "bg-white/10 text-white rounded-tr-none"
                       : "bg-[#1A1560] text-white/90 border border-white/5 rounded-tl-none"
                   )}>
                     {/* Renderizado de mensaje con soporte para botones de descarga */}
@@ -180,7 +180,7 @@ export default function AlexaAssistant() {
 
             {/* Input area */}
             <div className="p-4 bg-black/20 border-t border-white/5">
-              <form 
+              <form
                 onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                 className="relative"
               >
@@ -218,7 +218,7 @@ export default function AlexaAssistant() {
       >
         {/* Brillo 3D en la parte superior izquierda */}
         <div className="absolute top-1.5 left-2.5 w-6 h-3.5 bg-white/60 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />
-        
+
         {/* Sombra interna sutil inferior */}
         <div className="absolute bottom-0 right-0 left-0 h-4 bg-black/10 rounded-b-full blur-[3px]" />
 
@@ -229,16 +229,16 @@ export default function AlexaAssistant() {
             {/* Ojos y rubor */}
             <div className="flex gap-3 items-center">
               <div className="relative">
-                <motion.div 
-                  animate={{ scaleY: [1, 0.1, 1], transition: { repeatDelay: 3, repeat: Infinity, duration: 0.15 } }} 
-                  className="w-2.5 h-3.5 bg-[#0F0A4D] rounded-full" 
+                <motion.div
+                  animate={{ scaleY: [1, 0.1, 1], transition: { repeatDelay: 3, repeat: Infinity, duration: 0.15 } }}
+                  className="w-2.5 h-3.5 bg-[#0F0A4D] rounded-full"
                 />
                 <div className="absolute -left-2.5 top-1.5 w-2 h-1.5 bg-rose-500/50 rounded-full blur-[1px]" />
               </div>
               <div className="relative">
-                <motion.div 
-                  animate={{ scaleY: [1, 0.1, 1], transition: { repeatDelay: 3, repeat: Infinity, duration: 0.15 } }} 
-                  className="w-2.5 h-3.5 bg-[#0F0A4D] rounded-full" 
+                <motion.div
+                  animate={{ scaleY: [1, 0.1, 1], transition: { repeatDelay: 3, repeat: Infinity, duration: 0.15 } }}
+                  className="w-2.5 h-3.5 bg-[#0F0A4D] rounded-full"
                 />
                 <div className="absolute -right-2.5 top-1.5 w-2 h-1.5 bg-rose-500/50 rounded-full blur-[1px]" />
               </div>

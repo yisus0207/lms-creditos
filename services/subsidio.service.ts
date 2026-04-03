@@ -112,4 +112,21 @@ export const SubsidioService = {
     }
     return true;
   },
+
+  /**
+   * Quick summary for dashboard.
+   */
+  async getSummary() {
+    const { data, error } = await supabase!
+      .from('subsidios')
+      .select('valor_total');
+
+    if (error) {
+      console.error('Error fetching subsidio summary:', error.message);
+      return { total: 0 };
+    }
+
+    const total = (data || []).reduce((acc, curr) => acc + (curr.valor_total || 0), 0);
+    return { total };
+  },
 };
