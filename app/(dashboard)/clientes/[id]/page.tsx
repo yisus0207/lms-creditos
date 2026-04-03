@@ -137,11 +137,18 @@ export default function ClienteDetailPage() {
           <div className="grid sm:grid-cols-2 gap-8">
             {/* Ingresos Card */}
             <div className="bg-white rounded-[40px] border border-gray-100 p-10 shadow-sm">
-              <div className="flex items-center justify-between mb-10">
-                <h3 className="text-2xl font-black text-[#0B1E3F]">Ingresos</h3>
-                <div className="text-right">
-                  <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Total Acumulado</p>
-                  <p className="text-2xl font-black text-[#D4A017]">{formatCurrency(cliente.total_generado || 0)}</p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-6">
+                <h3 className="text-2xl font-black text-[#0B1E3F]">Ingresos y Deudas</h3>
+                <div className="flex items-center gap-6 text-right">
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Deuda Pendiente</p>
+                    <p className="text-xl font-black text-rose-500">{formatCurrency(cliente.total_deuda || 0)}</p>
+                  </div>
+                  <div className="h-10 w-px bg-gray-100 hidden sm:block"></div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Total Generado</p>
+                    <p className="text-2xl font-black text-[#D4A017]">{formatCurrency(cliente.total_generado || 0)}</p>
+                  </div>
                 </div>
               </div>
               <div className="space-y-6">

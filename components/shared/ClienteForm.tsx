@@ -1,10 +1,25 @@
 import { useState } from 'react';
 import { ClienteService } from '@/services/cliente.service';
 import Button from '@/components/ui/Button';
+import Select from '@/components/ui/Select';
 
 interface ClienteFormProps {
   onSuccess: () => void;
 }
+
+const BANCOS_PRINCIPALES = [
+  'Bancolombia',
+  'Davivienda',
+  'Banco Caja Social',
+  'Banco de Bogotá',
+  'BBVA',
+  'Banco de Occidente',
+  'Scotiabank Colpatria',
+  'Banco Popular',
+  'Banco AV Villas',
+  'Itaú',
+  'Otro'
+].map(banco => ({ id: banco, label: banco }));
 
 export default function ClienteForm({ onSuccess }: ClienteFormProps) {
   const [formData, setFormData] = useState({
@@ -14,11 +29,17 @@ export default function ClienteForm({ onSuccess }: ClienteFormProps) {
     telefono: '',
     direccion: '',
     email: '',
+    banco: '',
+    otroBanco: '',
   });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleBancoChange = (value: string) => {
+    setFormData(prev => ({ ...prev, banco: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,6 +49,12 @@ export default function ClienteForm({ onSuccess }: ClienteFormProps) {
     setLoading(true);
     try {
       const fullNombre = `${formData.nombre} ${formData.apellidos}`.trim();
+      
+      let bancoFinal = formData.banco;
+      if (bancoFinal === 'Otro' && formData.otroBanco) {
+        bancoFinal = formData.otroBanco.trim();
+      }
+
       const result = await ClienteService.createCliente({
         nombre: fullNombre,
         numero_documento: formData.numeroDocumento,
@@ -35,6 +62,7 @@ export default function ClienteForm({ onSuccess }: ClienteFormProps) {
         telefono: formData.telefono,
         email: formData.email,
         direccion: formData.direccion,
+        banco: bancoFinal,
       });
 
       if (result) {
@@ -51,7 +79,7 @@ export default function ClienteForm({ onSuccess }: ClienteFormProps) {
   const labelClasses = "block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 px-1";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Name Group */}
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
@@ -105,6 +133,34 @@ export default function ClienteForm({ onSuccess }: ClienteFormProps) {
             className={inputClasses}
           />
         </div>
+      </div>
+
+      {/* Bank info */}
+      <div className="grid sm:grid-cols-2 gap-6">
+        <div className="col-span-full sm:col-span-1">
+          <Select
+            label="Banco Preferido / Entidad"
+            options={BANCOS_PRINCIPALES}
+            value={formData.banco}
+            onChange={handleBancoChange}
+            placeholder="Seleccione un Banco"
+          />
+        </div>
+        
+        {formData.banco === 'Otro' && (
+          <div className="col-span-full sm:col-span-1 animate-in fade-in slide-in-from-top-2">
+            <label className={labelClasses}>¿Cuál Banco?</label>
+            <input
+              type="text"
+              name="otroBanco"
+              value={formData.otroBanco}
+              onChange={handleChange}
+              placeholder="Escriba el nombre del banco"
+              className={inputClasses}
+              required={formData.banco === 'Otro'}
+            />
+          </div>
+        )}
       </div>
 
       {/* Address & Email */}

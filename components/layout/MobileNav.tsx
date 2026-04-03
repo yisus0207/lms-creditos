@@ -20,7 +20,7 @@ const NAV_ITEMS = [
   { label: 'Clientes', href: '/clientes', icon: Users },
   { label: 'Ingresos', href: '/ingresos', icon: DollarSign },
   { label: 'Docs', href: '/documentos', icon: FileText },
-  { label: 'Ops', href: '/operaciones', icon: Briefcase },
+  { label: 'Subs', href: '/operaciones', icon: Briefcase },
 ];
 
 export default function MobileNav() {

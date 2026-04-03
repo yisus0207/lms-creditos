@@ -1,5 +1,45 @@
 import { supabase } from '@/lib/supabase';
-import type { Cliente } from '@/types';
+import type { Cliente, Ingreso } from '@/types';
+
+// Utility to calculate real net debt per category
+function calculateNetDebt(ingresos: any[] | undefined): number {
+  if (!ingresos || ingresos.length === 0) return 0;
+  
+  const debtByType: Record<string, number> = {};
+  const paidByType: Record<string, number> = {};
+
+  ingresos.forEach(ing => {
+    const tipo = ing.tipo;
+    const monto = ing.monto || 0;
+    
+    if (ing.estado === 'pendiente') {
+      debtByType[tipo] = (debtByType[tipo] || 0) + monto;
+    } else if (ing.estado === 'pagado') {
+      paidByType[tipo] = (paidByType[tipo] || 0) + monto;
+    }
+  });
+
+  let totalDebt = 0;
+  // Calculate net remaining debt for each known type
+  ['viabilidad', 'documentos', 'comision'].forEach(tipo => {
+    const pending = debtByType[tipo] || 0;
+    const paid = paidByType[tipo] || 0;
+    const remaining = pending - paid;
+    if (remaining > 0) {
+      totalDebt += remaining;
+    }
+  });
+
+  return totalDebt;
+}
+
+// Utility to sum ALL paid amounts regardless of type
+function calculateTotalGenerado(ingresos: any[] | undefined): number {
+  if (!ingresos || ingresos.length === 0) return 0;
+  return ingresos
+    .filter(ing => ing.estado === 'pagado')
+    .reduce((acc, curr) => acc + (curr.monto || 0), 0);
+}
 
 export const ClienteService = {
   /**
@@ -8,7 +48,7 @@ export const ClienteService = {
   async getClientes(): Promise<Cliente[]> {
     const { data: clientes, error } = await supabase!
       .from('clientes')
-      .select('*, ingresos(monto), operaciones(estado)')
+      .select('*, ingresos(monto, estado, tipo), operaciones(estado)')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -20,7 +60,8 @@ export const ClienteService = {
     return (clientes || []).map(c => ({
       ...c,
       estado: c.operaciones?.[0]?.estado || 'viabilidad',
-      total_generado: c.ingresos?.reduce((acc: number, curr: any) => acc + (curr.monto || 0), 0) || 0
+      total_generado: calculateTotalGenerado(c.ingresos),
+      total_deuda: calculateNetDebt(c.ingresos)
     }));
   },
 
@@ -53,7 +94,8 @@ export const ClienteService = {
     const processedCliente: Cliente = {
       ...cliente,
       estado: cliente.operaciones?.[0]?.estado || 'viabilidad',
-      total_generado: cliente.ingresos?.reduce((acc: number, curr: any) => acc + (curr.monto || 0), 0) || 0
+      total_generado: calculateTotalGenerado(cliente.ingresos),
+      total_deuda: calculateNetDebt(cliente.ingresos)
     };
 
     return {
@@ -96,27 +138,40 @@ export const ClienteService = {
   },
 
   /**
-   * Delete a client by ID.
-   * Note: This will fail if the client has associated records in the 'ingresos' table.
+   * Delete a client by ID and all associated records (cascade delete).
    */
   async deleteCliente(id: string): Promise<{ success: boolean; error?: string }> {
-    const { error } = await supabase!
-      .from('clientes')
-      .delete()
-      .eq('id', id);
+    try {
+      // 1. Eliminar documentos asociados
+      const { error: errDocs } = await supabase!.from('documentos').delete().eq('cliente_id', id);
+      if (errDocs) console.warn('Error borrando documentos:', errDocs.message);
 
-    if (error) {
-      if (error.code === '23503') {
-        return { 
-          success: false, 
-          error: 'No se puede eliminar el cliente porque tiene registros asociados (Pagos/Ingresos). Elimina primero sus registros vinculados.' 
-        };
+      // 2. Eliminar ingresos/pagos asociados
+      const { error: errIngresos } = await supabase!.from('ingresos').delete().eq('cliente_id', id);
+      if (errIngresos) console.warn('Error borrando ingresos:', errIngresos.message);
+
+      // 3. Eliminar operaciones asociadas
+      const { error: errOps } = await supabase!.from('operaciones').delete().eq('cliente_id', id);
+      if (errOps) console.warn('Error borrando operaciones:', errOps.message);
+
+      // 4. Eliminar el cliente principal
+      const { error } = await supabase!
+        .from('clientes')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
       }
-      console.error(`Error deleting cliente ${id}:`, error.message);
-      return { success: false, error: error.message };
-    }
 
-    return { success: true };
+      return { success: true };
+    } catch (err: any) {
+      console.error(`Error deleting cliente ${id}:`, err.message);
+      return { 
+        success: false, 
+        error: err.message || 'Hubo un problema al intentar eliminar el cliente y sus registros. Intenta nuevamente.' 
+      };
+    }
   },
 
   /**

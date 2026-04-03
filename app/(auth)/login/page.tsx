@@ -131,133 +131,164 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#0F0A4D] px-4 relative overflow-hidden">
-      {/* Dynamic Background */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-[#D4A017]/5 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px]" />
-      
-      {/* Back to Home Button */}
-      <button 
-        onClick={() => router.push('/')}
-        className="absolute top-8 left-8 flex items-center gap-2 text-white/40 hover:text-[#D4A017] transition-all group/back z-20"
-      >
-        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/back:bg-[#D4A017]/10 transition-colors">
-          <Sparkles className="w-4 h-4" />
+    <main className="flex min-h-screen bg-[#060318] overflow-hidden">
+
+      {/* ===== PANEL IZQUIERDO: MARCA & VISUAL ===== */}
+      <div className="hidden lg:flex flex-col justify-between w-[45%] relative p-14 overflow-hidden">
+        {/* Fondo con orbs y grid */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+          <div className="absolute top-[-100px] left-[-100px] w-[500px] h-[500px] rounded-full bg-[#D4A017]/10 blur-[150px]" />
+          <div className="absolute bottom-[-100px] right-[-50px] w-[400px] h-[400px] rounded-full bg-blue-600/10 blur-[130px]" />
         </div>
-        <span className="text-[10px] font-black uppercase tracking-widest">Volver al Inicio</span>
-      </button>
-      
-      <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in-95 duration-700">
-        {/* Brand Header */}
-        <div className="mb-10 text-center">
-          <img 
-            src="/images/logo.jpg" 
-            alt="LMS Logo" 
-            className="w-24 h-24 rounded-[32px] mx-auto mb-6 shadow-2xl shadow-[#D4A017]/20 border-2 border-[#D4A017]/10 animate-in zoom-in duration-1000"
-          />
-          <h1 className="text-4xl font-black text-white tracking-tighter uppercase mb-2">LMS</h1>
-          <div className="flex items-center justify-center gap-2">
-            <Sparkles className="w-3 h-3 text-[#D4A017]" />
-            <p className="text-xs font-bold text-white/40 uppercase tracking-[0.2em]">Acceso Seguro al Sistema</p>
+
+        {/* Logo */}
+        <div className="relative z-10 flex items-center gap-3">
+          <img src="/images/logo.jpg" alt="LMS" className="w-10 h-10 rounded-xl border border-white/10" />
+          <div>
+            <p className="text-white font-black text-base tracking-tighter">LMS Créditos</p>
+            <p className="text-white/30 text-[10px] uppercase tracking-widest">Portal Seguro</p>
           </div>
         </div>
 
-        {/* Login Card (Glassmorphism) */}
-        <div className="rounded-[40px] bg-white/5 backdrop-blur-xl border border-white/10 p-10 shadow-2xl overflow-hidden group">
-          {/* Subtle light beam effect */}
-          <div className="absolute -inset-x-full top-0 h-px bg-gradient-to-r from-transparent via-[#D4A017]/30 to-transparent group-hover:inset-x-full transition-all duration-1000" />
+        {/* Headline del panel */}
+        <div className="relative z-10 space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#D4A017]/10 border border-[#D4A017]/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4A017] animate-pulse" />
+            <span className="text-[10px] font-black text-[#D4A017] uppercase tracking-widest">Acceso Seguro al Sistema</span>
+          </div>
+          <h2 className="text-5xl font-black text-white leading-[1.05] tracking-tighter">
+            Bienvenido<br />de regreso<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4A017] to-[#f0c040]">a tu gestión.</span>
+          </h2>
+          <p className="text-white/40 font-medium leading-relaxed max-w-xs">
+            Monitorea tu trámite en tiempo real. Cada paso, cada documento, cada aprobación.
+          </p>
+          
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 pt-4">
+            {[
+              { value: '+500', label: 'Familias', icon: '🏠' },
+              { value: '98%', label: 'Aprobados', icon: '✅' },
+              { value: '72h', label: 'Respuesta', icon: '⚡' },
+            ].map((s, i) => (
+              <div key={i} className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                <div className="text-xl mb-1">{s.icon}</div>
+                <div className="text-lg font-black text-white">{s.value}</div>
+                <div className="text-[10px] text-white/30 font-bold uppercase tracking-wider">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
 
+        {/* Footer del panel */}
+        <div className="relative z-10">
+          <p className="text-white/20 text-[11px] font-medium">© 2025 LMS Créditos Hipotecarios · Cifrado AES-256</p>
+        </div>
+      </div>
+
+      {/* ===== PANEL DERECHO: FORMULARIO ===== */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
+        {/* Orb sutil derecha */}
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-purple-700/10 blur-[120px] pointer-events-none" />
+
+        {/* Back button */}
+        <button
+          onClick={() => router.push('/')}
+          className="absolute top-8 left-8 flex items-center gap-2 text-white/30 hover:text-white/70 transition-colors z-20"
+        >
+          <span className="text-sm">←</span>
+          <span className="text-xs font-bold uppercase tracking-widest">Inicio</span>
+        </button>
+
+        <div className="relative z-10 w-full max-w-md">
+          {/* Encabezado del form */}
+          <div className="mb-10">
+            {/* Solo visible en mobile */}
+            <div className="flex lg:hidden items-center gap-3 mb-8">
+              <img src="/images/logo.jpg" alt="LMS" className="w-10 h-10 rounded-xl border border-white/10" />
+              <p className="text-white font-black text-base tracking-tighter">LMS Créditos</p>
+            </div>
+            <h1 className="text-3xl font-black text-white tracking-tighter mb-2">Iniciar sesión</h1>
+            <p className="text-white/40 text-sm font-medium">Ingresa tu correo o número de cédula</p>
+          </div>
+
+          {/* Errores y confirmaciones */}
           {error && (
-            <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3 text-rose-200 text-sm font-medium animate-in slide-in-from-top-2">
-              <AlertCircle className="w-5 h-5 shrink-0" />
+            <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3 text-rose-300 text-sm font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
-
           {resetSent && (
-            <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3 text-emerald-200 text-sm font-medium animate-in slide-in-from-top-2">
-              <Sparkles className="w-5 h-5 shrink-0" />
-              <span>¡Correo de recuperación enviado! Revisa tu bandeja de entrada.</span>
+            <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3 text-emerald-300 text-sm font-medium">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>¡Correo de recuperación enviado! Revisa tu bandeja.</span>
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
-                Correo Corporativo
-              </label>
-              <div className="relative group/input">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within/input:text-[#D4A017] transition-colors" />
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className="block text-xs font-black text-white/40 uppercase tracking-widest mb-2">Correo o Cédula</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                 <input
                   required
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Cédula o Correo electrónico"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[#D4A017]/50 focus:ring-4 focus:ring-[#D4A017]/5 transition-all"
+                  placeholder="correo@email.com o 1.094.000.000"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-11 pr-4 text-white text-sm placeholder:text-white/15 focus:outline-none focus:border-[#D4A017]/40 focus:bg-white/8 transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
-                Contraseña Secreta
-              </label>
-              <div className="relative group/input">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within/input:text-[#D4A017] transition-colors" />
+            <div>
+              <label className="block text-xs font-black text-white/40 uppercase tracking-widest mb-2">Contraseña</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                 <input
                   required
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/10 focus:outline-none focus:border-[#D4A017]/50 focus:ring-4 focus:ring-[#D4A017]/5 transition-all"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-11 pr-4 text-white text-sm placeholder:text-white/10 focus:outline-none focus:border-[#D4A017]/40 transition-all"
                 />
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              loading={loading}
-              className="w-full h-16 rounded-2xl text-lg relative overflow-hidden group/btn shadow-2xl shadow-amber-900/20"
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-14 rounded-2xl bg-[#D4A017] text-[#060318] font-black text-base hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_40px_rgba(212,160,23,0.25)] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
-              Ingresar al Sistema
-            </Button>
+              {loading ? 'Verificando...' : 'Entrar al sistema →'}
+            </button>
           </form>
 
-          <div className="mt-10 text-center">
-            <button 
+          {/* Links secundarios */}
+          <div className="mt-8 flex flex-col items-center gap-4">
+            <button
               type="button"
               onClick={handleResetPassword}
               disabled={loading || resetSent}
-              className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] hover:text-[#D4A017] transition-colors disabled:opacity-50"
+              className="text-xs text-white/30 hover:text-[#D4A017] font-bold uppercase tracking-widest transition-colors disabled:opacity-40"
             >
-              {loading ? 'Procesando...' : '¿Olvidaste tu contraseña? Recuperar aquí'}
+              ¿Olvidaste tu contraseña?
             </button>
-
-            <div className="mt-8 pt-8 border-t border-white/5">
-              <p className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-4">¿Nuevo en LMS?</p>
-              <Button 
-                onClick={() => router.push('/register')}
-                className="w-full h-12 bg-transparent border border-white/10 hover:bg-white/5 text-[#D4A017] rounded-xl font-black text-[10px] uppercase tracking-[0.2em]"
-              >
-                CREAR MI CUENTA
-              </Button>
-            </div>
+            <div className="w-full h-px bg-white/5" />
+            <p className="text-xs text-white/30 font-medium">¿No tienes cuenta?{' '}
+              <button onClick={() => router.push('/register')} className="text-[#D4A017] font-black hover:underline">
+                Regístrate aquí
+              </button>
+            </p>
           </div>
-        </div>
-
-        {/* Security Badge */}
-        <div className="mt-10 flex flex-col items-center gap-4 text-center">
-          <div className="flex items-center gap-6 opacity-30">
-            <div className="h-[1px] w-12 bg-white" />
-            <span className="text-[10px] font-black text-white uppercase tracking-[0.4em]">Secure Gateway</span>
-            <div className="h-[1px] w-12 bg-white" />
-          </div>
-          <p className="text-[10px] text-white/20 font-medium">Sincronizado con Supabase Auth & AES-256 Encryption</p>
         </div>
       </div>
+
     </main>
   );
 }
+

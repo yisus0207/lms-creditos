@@ -71,6 +71,7 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Teléfono</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Estado</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Total Generado</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Deuda Pendiente</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Acciones</th>
             </tr>
           </thead>
@@ -92,8 +93,11 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
                     {cliente.estado === 'banco' ? 'En Banco' : cliente.estado?.charAt(0).toUpperCase() + (cliente.estado?.slice(1) || '')}
                   </Badge>
                 </td>
-                <td className="px-6 py-5 font-bold text-[#0F0A4D] text-sm">
+                <td className="px-6 py-5 font-bold text-[#D4A017] text-sm">
                   {formatCurrency(cliente.total_generado)}
+                </td>
+                <td className="px-6 py-5 font-bold text-rose-500 text-sm">
+                  {formatCurrency(cliente.total_deuda)}
                 </td>
                 <td className="px-6 py-5 text-right space-x-2">
                   <Link 
@@ -120,7 +124,7 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
             ))}
             {filteredClientes.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-400 italic">
                   No hay clientes registrados o que coincidan con la búsqueda.
                 </td>
               </tr>

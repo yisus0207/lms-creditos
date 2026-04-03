@@ -39,9 +39,11 @@ export interface Cliente {
   empresa?: string;
   cargo?: string;
   user_id?: string;            // Link to Supabase Auth
+  banco?: string;
   monto_total_credito?: number; // For debt calculations
   estado?: EstadoOperacion; 
   total_generado?: number;   
+  total_deuda?: number;
   created_at: string;
 }
 
@@ -79,3 +81,32 @@ export interface Documento {
   subido_por: string;
   created_at: string;
 }
+
+// ------------------------------------------------------------
+// Subsidio
+// ------------------------------------------------------------
+export interface Subsidio {
+  id: string;
+  cliente_id: string;
+  valor_total: number;
+  descripcion?: string;
+  created_at: string;
+  // Virtual/joined fields
+  cliente_nombre?: string;
+  cliente_cedula?: string;
+  total_abonos?: number;
+  pendiente?: number;
+}
+
+// ------------------------------------------------------------
+// Abono de Subsidio
+// ------------------------------------------------------------
+export interface AbonoSubsidio {
+  id: string;
+  subsidio_id: string;
+  monto: number;
+  fecha: string;
+  observacion?: string;
+  created_at: string;
+}
+

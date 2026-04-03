@@ -36,7 +36,7 @@ export const NAV_LINKS_DASHBOARD = [
   { href: '/clientes', label: 'Clientes', icon: 'Users' },
   { href: '/ingresos', label: 'Ingresos', icon: 'DollarSign' },
   { href: '/documentos', label: 'Documentos', icon: 'FileText' },
-  { href: '/operaciones', label: 'Operaciones', icon: 'Briefcase' },
+  { href: '/operaciones', label: 'Subsidios', icon: 'Briefcase' },
 ] as const;
 
 export const PORTAL_BASE = '/portal';
