@@ -116,9 +116,9 @@ class ChatService {
       - Si te piden un documento, di: "Aquí tienes el [nombre]. [[DOWNLOAD:url_archivo]]" y añade algo breve como "Espero que sirva para el cierre". Nada más.
 
       CONTEXTO ACTUAL (${context?.fechaActual || 'Hoy'}):
-      - Cartera: $${context?.stats.totalIngresos.toLocaleString()}.
-      - Pipeline: ${context?.stats.pipeline.viabilidad} V / ${context?.stats.pipeline.documentacion} D / ${context?.stats.pipeline.banco} B.
-      - Focos (Primeros 3): ${JSON.stringify(context?.operaciones?.filter((o: any) => o.etapa !== 'aprobado').slice(0, 3))}
+      - Cartera: $${(context?.stats?.totalIngresos || 0).toLocaleString()}.
+      - Pipeline: ${context?.stats?.pipeline?.viabilidad || 0} V / ${context?.stats?.pipeline?.documentacion || 0} D / ${context?.stats?.pipeline?.banco || 0} B.
+      - Focos (Primeros 3): ${context?.operaciones ? JSON.stringify(context.operaciones.filter((o: any) => o.etapa !== 'aprobado').slice(0, 3)) : 'Sin operaciones activas'}
 
       MANEJO DE ARCHIVOS:
       Al entregar un documento, usa SIEMPRE: "Aquí tienes el [nombre]. [[DOWNLOAD:url_archivo]]". No te extiendas.`
