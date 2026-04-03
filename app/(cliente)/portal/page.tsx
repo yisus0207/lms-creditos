@@ -22,6 +22,7 @@ import { Suspense } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import ClientFinancialSummary from '@/components/cliente/ClientFinancialSummary';
 import DocumentUploadZone from '@/components/cliente/DocumentUploadZone';
+import PropertyMap from '@/components/cliente/PropertyMap';
 import Badge from '@/components/ui/Badge';
 import UIModal from '@/components/ui/UIModal';
 import { EstadoOperacion } from '@/types';
@@ -223,6 +224,12 @@ function PortalContent() {
               <StatusTracker currentStep={cliente.estado as EstadoOperacion} />
             </div>
           </Card>
+
+          {/* Property Map Integration */}
+          <PropertyMap 
+            direccion={cliente.direccion} 
+            nombre={cliente.nombre} 
+          />
         </section>
 
         {/* Upload Zone - Instant Sidebar Access */}
