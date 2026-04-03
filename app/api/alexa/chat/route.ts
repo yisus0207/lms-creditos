@@ -7,8 +7,11 @@ export async function POST(req: Request) {
     const apiKey = process.env.DEEPSEEK_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API Key not configured' }, { status: 500 });
+      console.error('DEEPSEEK_API_KEY no encontrada en process.env');
+      return NextResponse.json({ error: 'API Key not configured in Vercel' }, { status: 500 });
     }
+
+    console.log('Iniciando petición a DeepSeek con API Key:', apiKey.substring(0, 5) + '...');
 
     // 1. Primera llamada para detectar si hay una herramienta que ejecutar
     const response = await fetch('https://api.deepseek.com/chat/completions', {
@@ -27,9 +30,12 @@ export async function POST(req: Request) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('DeepSeek API error:', errorData);
-      return NextResponse.json({ error: 'DeepSeek API error' }, { status: response.status });
+      const errorText = await response.text();
+      console.error('DeepSeek API error raw:', errorText);
+      return NextResponse.json({ 
+        error: 'DeepSeek API error', 
+        details: errorText.substring(0, 100) 
+      }, { status: response.status });
     }
 
     const data = await response.json();

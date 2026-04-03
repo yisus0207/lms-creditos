@@ -177,17 +177,22 @@ class ChatService {
       const data = await response.json();
       
       // Si recibimos una respuesta con tool_calls de DeepSeek
-      if (data.choices[0].message.tool_calls) {
+      if (data?.choices?.[0]?.message?.tool_calls) {
         // Enviar de vuelta para que el backend procese (o manejar aquí)
-        // Por simplicidad en este sistema, el backend de la API manejará la ejecución
-        // de la herramienta y devolverá la respuesta final.
+        // El backend de la API ya debería haber procesado esto si se llamó con el parámetro tool
         return data.choices[0].message.content || "He procesado tu solicitud con éxito.";
       }
 
-      return data.choices[0].message.content;
-    } catch (err) {
-      console.error('Error en Alexa Service:', err);
-      return "Hubo un pequeño contratiempo en mi sistema, pero ya estoy de vuelta. ¿En qué puedo apoyarte ahora?";
+      const content = data?.choices?.[0]?.message?.content;
+      if (!content) {
+        console.error('Respuesta incompleta de DeepSeek:', data);
+        return "Disculpa, he tenido un problema al procesar la respuesta. ¿Podrías intentar de nuevo?";
+      }
+
+      return content;
+    } catch (err: any) {
+      console.error('Error profundo en Alexa Service:', err.message);
+      return `Hubo un pequeño contratiempo (${err.message}). Pero ya estoy de vuelta. ¿En qué puedo apoyarte ahora?`;
     }
   }
 }
