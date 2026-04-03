@@ -18,10 +18,15 @@ export default function LandingPage() {
     <>
       {/* Hero Overhaul */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-[#0F0A4D]">
-        {/* Abstract Background Decoration */}
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#D4A017]/10 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[100px]" />
+        {/* Luxury Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/images/hero-bg.jpg" 
+            alt="Fondo LMS" 
+            className="w-full h-full object-cover opacity-30 mix-blend-overlay"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0F0A4D] via-[#0F0A4D]/80 to-[#FDFDFD]" />
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(212,160,23,0.15),transparent)]" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 flex flex-col items-center text-center">
