@@ -25,6 +25,7 @@ interface ScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  defaultClienteId?: string;
 }
 
 const DOCUMENT_TYPES = [
@@ -37,11 +38,12 @@ const DOCUMENT_TYPES = [
   'Otros'
 ];
 
-export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModalProps) {
+export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClienteId }: ScannerModalProps) {
   const [step, setStep] = useState(1);
   const [clients, setClients] = useState<Cliente[]>([]);
   const [selectedClientId, setSelectedClientId] = useState('');
   const [docType, setDocType] = useState(DOCUMENT_TYPES[0]);
+  const [customDocType, setCustomDocType] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -50,8 +52,13 @@ export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModa
   useEffect(() => {
     if (isOpen) {
       fetchClients();
+      if (defaultClienteId) {
+        setSelectedClientId(defaultClienteId);
+      } else {
+        setSelectedClientId('');
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, defaultClienteId]);
 
   const fetchClients = async () => {
     const allClients = await ClienteService.getClientes();
@@ -93,7 +100,9 @@ export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModa
       }
 
       const pdfBlob = pdf.output('blob');
-      const fileName = `escaneo_${Date.now()}.pdf`;
+      const finalDocType = docType === 'Otros' && customDocType.trim() ? customDocType.trim() : docType;
+      const safeTypeName = finalDocType.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+      const fileName = `${safeTypeName}_${Date.now()}.pdf`;
       const filePath = `${selectedClientId}/${fileName}`;
 
       // 2. Upload to Supabase Storage
@@ -117,7 +126,7 @@ export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModa
         .from('documentos')
         .insert([{
           cliente_id: selectedClientId,
-          tipo_documento: docType,
+          tipo_documento: finalDocType,
           url_archivo: publicUrl,
           subido_por: 'Administrador'
         }]);
@@ -130,6 +139,7 @@ export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModa
       setStep(1);
       setImages([]);
       setSelectedClientId('');
+      setCustomDocType('');
     } catch (err: any) {
       console.error('Error saving document:', err.message);
       alert(err.message || 'Error guardando documento.');
@@ -194,21 +204,23 @@ export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModa
 
           {step === 1 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6">
-              <SearchableSelect 
-                label="1. Seleccione al Beneficiario"
-                placeholder="Buscar nombre o cédula..."
-                options={clients.map(c => ({
-                  id: c.id,
-                  label: c.nombre,
-                  sublabel: `Cédula: ${c.numero_documento}`
-                }))}
-                value={selectedClientId}
-                onChange={setSelectedClientId}
-              />
+              {!defaultClienteId && (
+                <SearchableSelect 
+                  label="1. Seleccione al Beneficiario"
+                  placeholder="Buscar nombre o cédula..."
+                  options={clients.map(c => ({
+                    id: c.id,
+                    label: c.nombre,
+                    sublabel: `Cédula: ${c.numero_documento}`
+                  }))}
+                  value={selectedClientId}
+                  onChange={setSelectedClientId}
+                />
+              )}
 
               <div>
                 <label className="block text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-widest mb-4">
-                  2. Tipo de Documento Físico
+                  {defaultClienteId ? "1. Tipo de Documento Físico" : "2. Tipo de Documento Físico"}
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   {DOCUMENT_TYPES.map(type => (
@@ -231,10 +243,23 @@ export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModa
                     </button>
                   ))}
                 </div>
+
+                {docType === 'Otros' && (
+                  <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                    <input
+                      type="text"
+                      placeholder="Escribe el nombre del documento..."
+                      value={customDocType}
+                      onChange={(e) => setCustomDocType(e.target.value)}
+                      className="w-full bg-white border-2 border-gray-100 rounded-2xl px-5 py-4 text-sm font-bold text-[#0F0A4D] focus:outline-none focus:border-[#D4A017] transition-colors"
+                      autoFocus
+                    />
+                  </div>
+                )}
               </div>
 
               <button
-                disabled={!selectedClientId}
+                disabled={!selectedClientId || (docType === 'Otros' && !customDocType.trim())}
                 onClick={() => setStep(2)}
                 className="w-full h-16 bg-[#0F0A4D] text-white rounded-[24px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-navy-800 disabled:opacity-40 transition-all mt-10 shadow-xl shadow-navy-900/10"
               >
@@ -350,7 +375,9 @@ export default function ScannerModal({ isOpen, onClose, onSuccess }: ScannerModa
                   </div>
                   <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-[#0F0A4D]/50 border-b border-gray-100 pb-3">
                     <span>Clasificación:</span>
-                    <span className="text-[#D4A017]">{docType}</span>
+                    <span className="text-[#D4A017]">
+                      {docType === 'Otros' && customDocType.trim() ? customDocType.trim() : docType}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-[#0F0A4D]/50">
                     <span>Total de Páginas:</span>

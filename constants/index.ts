@@ -35,7 +35,6 @@ export const NAV_LINKS_DASHBOARD = [
   { href: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
   { href: '/clientes', label: 'Clientes', icon: 'Users' },
   { href: '/ingresos', label: 'Ingresos', icon: 'DollarSign' },
-  { href: '/documentos', label: 'Documentos', icon: 'FileText' },
   { href: '/operaciones', label: 'Subsidios', icon: 'Briefcase' },
 ] as const;
 

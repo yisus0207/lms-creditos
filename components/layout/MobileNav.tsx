@@ -19,7 +19,6 @@ const NAV_ITEMS = [
   { label: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Clientes', href: '/clientes', icon: Users },
   { label: 'Ingresos', href: '/ingresos', icon: DollarSign },
-  { label: 'Docs', href: '/documentos', icon: FileText },
   { label: 'Subs', href: '/operaciones', icon: Briefcase },
 ];
 

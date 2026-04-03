@@ -189,15 +189,46 @@ export default function AlexaAssistant() {
         )}
       </AnimatePresence>
 
-      {/* Toggle Button */}
+      {/* Toggle Button / Bolita 3D Kawaii */}
       <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-16 h-16 rounded-[24px] bg-gradient-to-tr from-[#0F0A4D] to-[#1A1560] border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.4)] flex items-center justify-center text-[#D4A017] hover:text-white transition-colors pointer-events-auto relative group"
+        className="w-16 h-16 rounded-full flex items-center justify-center text-[#0F0A4D] transition-colors pointer-events-auto relative shadow-[0_15px_25px_rgba(212,160,23,0.3),_inset_-4px_-6px_12px_rgba(0,0,0,0.3),_inset_4px_4px_12px_rgba(255,255,255,0.7)] bg-gradient-to-br from-[#FFE866] via-[#D4A017] to-[#B8860B] overflow-hidden group"
       >
-        <div className="absolute inset-0 rounded-[24px] bg-[#D4A017]/10 animate-ping group-hover:hidden opacity-20" />
-        {isOpen ? <Minimize2 className="w-7 h-7" /> : <MessageCircle className="w-8 h-8" />}
+        {/* Brillo 3D en la parte superior izquierda */}
+        <div className="absolute top-1.5 left-2.5 w-6 h-3.5 bg-white/60 rounded-full blur-[1px] transform -rotate-12 pointer-events-none" />
+        
+        {/* Sombra interna sutil inferior */}
+        <div className="absolute bottom-0 right-0 left-0 h-4 bg-black/10 rounded-b-full blur-[3px]" />
+
+        {isOpen ? (
+          <X className="w-7 h-7 relative z-10" strokeWidth={3} />
+        ) : (
+          <div className="relative z-10 flex flex-col items-center justify-center -mt-0.5">
+            {/* Ojos y rubor */}
+            <div className="flex gap-3 items-center">
+              <div className="relative">
+                <motion.div 
+                  animate={{ scaleY: [1, 0.1, 1], transition: { repeatDelay: 3, repeat: Infinity, duration: 0.15 } }} 
+                  className="w-2.5 h-3.5 bg-[#0F0A4D] rounded-full" 
+                />
+                <div className="absolute -left-2.5 top-1.5 w-2 h-1.5 bg-rose-500/50 rounded-full blur-[1px]" />
+              </div>
+              <div className="relative">
+                <motion.div 
+                  animate={{ scaleY: [1, 0.1, 1], transition: { repeatDelay: 3, repeat: Infinity, duration: 0.15 } }} 
+                  className="w-2.5 h-3.5 bg-[#0F0A4D] rounded-full" 
+                />
+                <div className="absolute -right-2.5 top-1.5 w-2 h-1.5 bg-rose-500/50 rounded-full blur-[1px]" />
+              </div>
+            </div>
+            {/* Sonrisa */}
+            <div className="w-3.5 h-2 border-b-[2.5px] border-[#0F0A4D] rounded-b-full mt-0.5" />
+          </div>
+        )}
       </motion.button>
     </div>
   );

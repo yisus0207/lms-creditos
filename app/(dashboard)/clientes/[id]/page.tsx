@@ -9,9 +9,10 @@ import DashboardHeader from '@/components/layout/DashboardHeader';
 import StatusTracker from '@/components/shared/StatusTracker';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import DocumentGenerator from '@/components/shared/DocumentGenerator';
 import DocumentPreviewModal from '@/components/shared/DocumentPreviewModal';
-import { Eye, Download } from 'lucide-react';
+import ScannerModal from '@/components/shared/ScannerModal';
+import { Eye, Download, Trash2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function ClienteDetailPage() {
   const { id } = useParams();
@@ -26,6 +27,7 @@ export default function ClienteDetailPage() {
   });
   const [loading, setLoading] = useState(true);
   const [selectedDoc, setSelectedDoc] = useState<Documento | null>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const fetchDetail = useCallback(async () => {
     if (!id) return;
@@ -38,6 +40,35 @@ export default function ClienteDetailPage() {
   useEffect(() => {
     fetchDetail();
   }, [fetchDetail]);
+
+  const handleDeleteDocument = async (doc: Documento) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente el documento "${doc.tipo_documento}"?`)) return;
+
+    try {
+      if (doc.url_archivo) {
+        const urlParts = doc.url_archivo.split('/documentos/');
+        if (urlParts.length === 2) {
+          const filePath = urlParts[1];
+          const { error: storageError } = await supabase.storage
+            .from('documentos')
+            .remove([filePath]);
+          if (storageError) console.error('Error al eliminar fichero del Storage:', storageError);
+        }
+      }
+
+      const { error: dbError } = await supabase
+        .from('documentos')
+        .delete()
+        .eq('id', doc.id);
+
+      if (dbError) throw dbError;
+      
+      fetchDetail();
+    } catch (err) {
+      console.error(err);
+      alert('Error eliminando el documento');
+    }
+  };
 
   if (loading) return <div className="p-8 text-center text-gray-400">Cargando detalles del cliente...</div>;
   if (!data.cliente) return <div className="p-8 text-center text-red-500">Cliente no encontrado.</div>;
@@ -130,106 +161,110 @@ export default function ClienteDetailPage() {
             </div>
           </div>
 
-          {/* New: Document Automation Section */}
-          <DocumentGenerator cliente={cliente} />
+          {/* Main Info Box Closed Above */}
 
-          {/* Ingresos and Documentos Grid */}
-          <div className="grid sm:grid-cols-2 gap-8">
+          {/* Ingresos and Documentos Stack */}
+          <div className="flex flex-col gap-8">
             {/* Ingresos Card */}
-            <div className="bg-white rounded-[40px] border border-gray-100 p-10 shadow-sm">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-6">
+            <div className="bg-white rounded-[40px] border border-gray-100 p-8 shadow-sm">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-6">
                 <h3 className="text-2xl font-black text-[#0B1E3F]">Ingresos y Deudas</h3>
-                <div className="flex items-center gap-6 text-right">
+                <div className="flex flex-wrap items-center gap-4 text-right bg-gray-50 rounded-2xl p-4">
                   <div>
                     <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Deuda Pendiente</p>
                     <p className="text-xl font-black text-rose-500">{formatCurrency(cliente.total_deuda || 0)}</p>
                   </div>
-                  <div className="h-10 w-px bg-gray-100 hidden sm:block"></div>
+                  <div className="h-10 w-px bg-gray-200 hidden sm:block mx-2"></div>
                   <div>
                     <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Total Generado</p>
                     <p className="text-2xl font-black text-[#D4A017]">{formatCurrency(cliente.total_generado || 0)}</p>
                   </div>
                 </div>
               </div>
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {ingresos.length > 0 ? ingresos.map((ing) => (
-                  <div key={ing.id} className="flex items-center justify-between p-5 rounded-3xl bg-[#F8F9FA]/50 group hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
-                    <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-[#D4A017] font-black text-xl">
+                  <div key={ing.id} className="flex items-center justify-between p-5 rounded-[24px] bg-[#F8F9FA]/80 group hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200">
+                    <div className="flex items-center gap-4 min-w-0">
+                       <div className="w-12 h-12 flex-shrink-0 rounded-[18px] bg-amber-50 flex items-center justify-center text-[#D4A017] font-black text-xl shadow-sm">
                          $
                        </div>
-                       <div>
-                         <p className="text-base font-black text-[#0B1E3F] capitalize">{ing.tipo}</p>
+                       <div className="min-w-0 pr-2">
+                         <p className="text-sm sm:text-base font-black text-[#0B1E3F] capitalize truncate">{ing.tipo}</p>
                          <p className="text-xs text-gray-400 font-medium">{new Date(ing.fecha).toLocaleDateString()}</p>
                        </div>
                     </div>
-                    <div className="text-right">
-                       <p className="text-base font-bold text-[#0B1E3F]">{formatCurrency(ing.monto)}</p>
-                       <Badge variant={ing.estado === 'pagado' ? 'success' : 'warning'} className="!py-0.5 !px-3 !text-[10px] !font-bold">
+                    <div className="text-right flex-shrink-0">
+                       <p className="text-sm sm:text-base font-bold text-[#0B1E3F]">{formatCurrency(ing.monto)}</p>
+                       <Badge variant={ing.estado === 'pagado' ? 'success' : 'warning'} className="!py-0.5 !px-3 !text-[10px] !font-bold mt-1 inline-block">
                          {ing.estado?.toUpperCase()}
                        </Badge>
                     </div>
                   </div>
                 )) : (
-                  <p className="text-sm text-gray-400 italic py-4 text-center">No hay ingresos registrados.</p>
+                  <div className="col-span-full">
+                    <p className="text-sm text-gray-400 italic py-4 text-center bg-gray-50 rounded-2xl">No hay ingresos registrados.</p>
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Documentos Card */}
-            <div className="bg-white rounded-[40px] border border-gray-100 p-10 shadow-sm">
-              <h3 className="text-2xl font-black text-[#0B1E3F] mb-10">Documentos</h3>
-              <div className="space-y-6">
+            <div className="bg-white rounded-[40px] border border-gray-100 p-8 shadow-sm">
+              <h3 className="text-2xl font-black text-[#0B1E3F] mb-8">Documentos</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {documentos.length > 0 ? documentos.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-5 rounded-3xl bg-[#F8F9FA]/50 group hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
-                    <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                  <div key={doc.id} className="flex items-center justify-between p-5 rounded-[24px] bg-[#F8F9FA]/80 group hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200">
+                    <div className="flex items-center gap-4 min-w-0">
+                       <div className="w-12 h-12 flex-shrink-0 rounded-[18px] bg-blue-50/50 flex items-center justify-center text-blue-500 shadow-sm">
                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                          </svg>
                        </div>
-                       <div>
-                         <p className="text-base font-black text-[#0B1E3F]">{doc.tipo_documento}</p>
-                         <p className="text-xs text-gray-400 font-medium">{new Date(doc.created_at).toLocaleDateString()}</p>
+                       <div className="min-w-0 pr-2">
+                         <p className="text-sm sm:text-base font-black text-[#0B1E3F] truncate">{doc.tipo_documento}</p>
+                         <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{new Date(doc.created_at).toLocaleDateString()}</p>
                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                     <div className="flex items-center gap-2">
-                        <Badge variant="info" className="!py-0.5 !px-3 !text-[10px] !font-bold !bg-blue-100 !text-blue-600 border-none">
-                          SUBIDO
-                        </Badge>
-                        <div className="flex items-center gap-1">
-                          <button 
-                            onClick={() => setSelectedDoc(doc)}
-                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors" 
-                            title="Previsualizar"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
-                          <button 
-                            onClick={async () => {
-                              if (!doc.url_archivo) return;
-                              const response = await fetch(doc.url_archivo);
-                              const blob = await response.blob();
-                              const url = window.URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `${doc.tipo_documento.replace(/\s+/g, '_')}_${doc.id.substring(0,5)}.pdf`;
-                              document.body.appendChild(a);
-                              a.click();
-                              window.URL.revokeObjectURL(url);
-                            }}
-                            className="p-2 text-gray-400 hover:text-[#D4A017] transition-colors" 
-                            title="Descargar"
-                          >
-                            <Download className="w-5 h-5" />
-                          </button>
-                        </div>
-                     </div>
+                    
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button 
+                        onClick={() => setSelectedDoc(doc)}
+                        className="p-2 text-blue-500 bg-blue-50/80 hover:bg-blue-100 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5" 
+                        title="Previsualizar"
+                      >
+                        <Eye className="w-4.5 h-4.5" />
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          if (!doc.url_archivo) return;
+                          const response = await fetch(doc.url_archivo);
+                          const blob = await response.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${doc.tipo_documento.replace(/\s+/g, '_')}_${doc.id.substring(0,5)}.pdf`;
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                        }}
+                        className="p-2 text-[#D4A017] bg-amber-50/80 hover:bg-amber-100 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5" 
+                        title="Descargar"
+                      >
+                        <Download className="w-4.5 h-4.5" />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteDocument(doc)}
+                        className="p-2 text-rose-500 bg-rose-50/80 hover:bg-rose-100 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5" 
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-4.5 h-4.5" />
+                      </button>
                     </div>
                   </div>
                 )) : (
-                  <p className="text-sm text-gray-400 italic py-4 text-center">No hay documentos subidos.</p>
+                  <div className="col-span-full">
+                    <p className="text-sm text-gray-400 italic py-4 text-center bg-gray-50 rounded-2xl">No hay documentos subidos.</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -241,13 +276,10 @@ export default function ClienteDetailPage() {
           <div className="bg-white rounded-[40px] border border-gray-100 p-10 shadow-sm sticky top-6">
             <h3 className="text-2xl font-black text-[#0B1E3F] mb-10">Acciones Rápidas</h3>
             <div className="space-y-5">
-              <Button className="w-full h-16 bg-[#D4A017] hover:bg-[#B8860B] text-white flex items-center justify-center gap-4 rounded-2xl border-none shadow-xl shadow-amber-100 font-black text-lg transition-all active:scale-95">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Generar Documento
-              </Button>
-              <Button className="w-full h-16 bg-[#0B1E3F] hover:bg-[#152b54] text-white flex items-center justify-center gap-4 rounded-2xl border-none shadow-xl shadow-blue-100 font-black text-lg transition-all active:scale-95">
+              <Button 
+                onClick={() => setIsScannerOpen(true)}
+                className="w-full h-16 bg-[#0B1E3F] hover:bg-[#152b54] text-white flex items-center justify-center gap-4 rounded-2xl border-none shadow-xl shadow-blue-100 font-black text-lg transition-all active:scale-95"
+              >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
@@ -267,6 +299,13 @@ export default function ClienteDetailPage() {
       <DocumentPreviewModal 
         documento={selectedDoc} 
         onClose={() => setSelectedDoc(null)} 
+      />
+
+      <ScannerModal 
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onSuccess={fetchDetail}
+        defaultClienteId={cliente.id}
       />
     </div>
   );
