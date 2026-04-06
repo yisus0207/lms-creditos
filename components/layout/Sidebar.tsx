@@ -29,12 +29,32 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.email) {
-        setUserEmail(session.user.email);
+      if (session?.user) {
+        const email = session.user.email;
+        setUserEmail(email || null);
+
+        // Prioritize full_name from metadata (set during reset-password)
+        const metadataName = session.user.user_metadata?.full_name || session.user.user_metadata?.name;
+        
+        if (metadataName) {
+          setUserName(metadataName);
+        } else if (email) {
+          // Fallback: check clientes table
+          const { data: cliente } = await supabase
+            .from('clientes')
+            .select('nombre')
+            .eq('email', email)
+            .maybeSingle();
+          
+          if (cliente?.nombre) {
+            setUserName(cliente.nombre);
+          }
+        }
       }
     };
     fetchUser();
@@ -109,11 +129,11 @@ export default function Sidebar() {
           className="w-full bg-white/5 hover:bg-rose-500/10 rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 group/logout border border-transparent hover:border-rose-500/30"
         >
           <div className="w-8 h-8 rounded-full bg-[#D4A017]/20 group-hover/logout:bg-rose-500/20 flex items-center justify-center text-[#D4A017] group-hover/logout:text-rose-500 text-[10px] font-black transition-colors uppercase">
-            {userEmail?.substring(0, 2) || 'AD'}
+            {userName ? userName.substring(0, 2) : (userEmail?.substring(0, 2) || 'AD')}
           </div>
           <div className="flex-1 text-left overflow-hidden">
             <p className="text-[10px] font-black text-white uppercase tracking-wider truncate">
-              {userEmail || 'Administrador'}
+              {userName || userEmail || 'Administrador'}
             </p>
             <p className="text-[9px] text-[#D4A017] font-bold group-hover/logout:text-rose-500/70 transition-colors uppercase tracking-widest">Cierre de Sesión</p>
           </div>

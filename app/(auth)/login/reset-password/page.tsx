@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Button from '@/components/ui/Button';
-import { ShieldCheck, Lock, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Lock, AlertCircle, Sparkles, CheckCircle2, User } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,8 @@ export default function ResetPasswordPage() {
 
     try {
       const { error: resetError } = await supabase.auth.updateUser({
-        password: password
+        password: password,
+        data: { full_name: fullName }
       });
 
       if (resetError) throw resetError;
@@ -74,6 +76,23 @@ export default function ResetPasswordPage() {
             </div>
           ) : (
             <form onSubmit={handleReset} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
+                  Nombre Completo
+                </label>
+                <div className="relative group/input">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within/input:text-[#D4A017] transition-colors" />
+                  <input
+                    required
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Ej: David Salas"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-white/10 focus:outline-none focus:border-[#D4A017]/50 focus:ring-4 focus:ring-[#D4A017]/5 transition-all"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">
                   Nueva Contraseña
