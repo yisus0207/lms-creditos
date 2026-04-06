@@ -69,7 +69,10 @@ export const SubsidioService = {
   async create(subsidio: { cliente_id: string; valor_total: number; descripcion?: string }): Promise<Subsidio | null> {
     const { data, error } = await supabase!
       .from('subsidios')
-      .insert([subsidio])
+      .insert([{
+        ...subsidio,
+        descripcion: subsidio.descripcion?.toUpperCase() || ''
+      }])
       .select()
       .single();
 
@@ -86,7 +89,10 @@ export const SubsidioService = {
   async addAbono(abono: { subsidio_id: string; monto: number; fecha: string; observacion?: string }): Promise<AbonoSubsidio | null> {
     const { data, error } = await supabase!
       .from('abonos_subsidio')
-      .insert([abono])
+      .insert([{
+        ...abono,
+        observacion: abono.observacion?.toUpperCase() || ''
+      }])
       .select()
       .single();
 
@@ -117,9 +123,13 @@ export const SubsidioService = {
    * Update an existing subsidio.
    */
   async update(id: string, data: { valor_total?: number; descripcion?: string }): Promise<Subsidio | null> {
+    const updateData = {
+      ...data,
+      descripcion: data.descripcion?.toUpperCase()
+    };
     const { data: result, error } = await supabase!
       .from('subsidios')
-      .update(data)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

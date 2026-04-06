@@ -48,7 +48,7 @@ export default function ClientesPage() {
 
   const confirmDelete = async () => {
     if (!confirmModal.id) return;
-    
+
     const result = await ClienteService.deleteCliente(confirmModal.id);
     if (result.success) {
       loadClientes();
@@ -71,12 +71,12 @@ export default function ClientesPage() {
         title="Gestión de Clientes"
         description="Administra la base de datos de prospectos y clientes activos."
         actions={
-          <button 
+          <button
             onClick={() => setShowForm(true)}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A017] hover:bg-[#B8860B] text-[#0F0A4D] rounded-2xl font-black shadow-lg shadow-amber-900/10 transition-all active:scale-95 whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
-            Nuevo Cliente
+            Nuevo Cliente Banco
           </button>
         }
       />
@@ -87,11 +87,12 @@ export default function ClientesPage() {
         onClose={() => setShowForm(false)}
         title="Registrar Nuevo Prospecto"
       >
-        <ClienteForm 
+        <ClienteForm
+          defaultTipo="banco"
           onSuccess={() => {
             loadClientes();
             setShowForm(false);
-          }} 
+          }}
         />
       </UIModal>
 
@@ -100,20 +101,20 @@ export default function ClientesPage() {
         {loading ? (
           <div className="flex flex-col h-96 items-center justify-center">
             <div className="relative mb-6">
-               <div className="w-20 h-20 border-w-2 border-dashed border-gray-200 rounded-full animate-spin-slow"></div>
-               <div className="absolute inset-0 flex items-center justify-center">
-                 <Users className="w-8 h-8 text-[#D4A017] animate-pulse" />
-               </div>
+              <div className="w-20 h-20 border-w-2 border-dashed border-gray-200 rounded-full animate-spin-slow"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Users className="w-8 h-8 text-[#D4A017] animate-pulse" />
+              </div>
             </div>
             <p className="text-xs font-black text-gray-400 uppercase tracking-[0.25em]">Sincronizando Cartera...</p>
           </div>
         ) : currentClientes.length > 0 ? (
           <div className="flex flex-col">
-            <ClienteTable 
-              clientes={currentClientes} 
-              onDelete={handleDelete} 
+            <ClienteTable
+              clientes={currentClientes}
+              onDelete={handleDelete}
             />
-            
+
             {/* Pagination UI */}
             {totalPages > 1 && (
               <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex items-center justify-between">
@@ -135,7 +136,7 @@ export default function ClientesPage() {
                         onClick={() => paginate(num)}
                         className={cn(
                           "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black transition-all",
-                          currentPage === num 
+                          currentPage === num
                             ? "bg-[#D4A017] text-[#0F0A4D] shadow-lg shadow-amber-900/10"
                             : "bg-white border border-gray-100 text-gray-400 hover:bg-gray-100"
                         )}

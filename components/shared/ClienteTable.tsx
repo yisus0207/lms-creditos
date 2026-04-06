@@ -13,9 +13,11 @@ interface ClienteTableProps {
 export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredClientes = clientes.filter(c => 
-    c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.numero_documento.includes(searchTerm)
+  const filteredClientes = clientes.filter(c =>
+    (c.tipo_tramite !== 'subsidio') && (
+      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.numero_documento.includes(searchTerm)
+    )
   );
 
   const getStatusVariant = (estado?: string): 'info' | 'success' | 'warning' | 'error' | 'neutral' => {
@@ -83,7 +85,7 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
                     <div className="w-10 h-10 rounded-full bg-[#0F0A4D]/5 flex items-center justify-center text-[#0F0A4D] font-bold text-sm">
                       {cliente.nombre.charAt(0)}
                     </div>
-                    <span className="font-semibold text-[#0F0A4D] whitespace-nowrap">{cliente.nombre}</span>
+                    <span className="font-semibold text-[#0F0A4D] whitespace-nowrap uppercase">{cliente.nombre}</span>
                   </div>
                 </td>
                 <td className="px-6 py-5 text-sm text-gray-500 font-medium">{cliente.numero_documento}</td>
@@ -100,7 +102,7 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
                   {formatCurrency(cliente.total_deuda)}
                 </td>
                 <td className="px-6 py-5 text-right space-x-2">
-                  <Link 
+                  <Link
                     href={`/clientes/${cliente.id}`}
                     className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors"
                   >

@@ -41,9 +41,10 @@ export interface Cliente {
   user_id?: string;            // Link to Supabase Auth
   banco?: string;
   monto_total_credito?: number; // For debt calculations
-  estado?: EstadoOperacion; 
-  total_generado?: number;   
+  estado?: EstadoOperacion;
+  total_generado?: number;
   total_deuda?: number;
+  tipo_tramite?: 'banco' | 'subsidio'; // Classification for logic & views
   created_at: string;
 }
 

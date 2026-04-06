@@ -1,17 +1,18 @@
 import { supabase } from '@/lib/supabase';
 import type { Cliente, Ingreso } from '@/types';
+import { SubsidioService } from './subsidio.service';
 
 // Utility to calculate real net debt per category
 function calculateNetDebt(ingresos: any[] | undefined): number {
   if (!ingresos || ingresos.length === 0) return 0;
-  
+
   const debtByType: Record<string, number> = {};
   const paidByType: Record<string, number> = {};
 
   ingresos.forEach(ing => {
     const tipo = ing.tipo;
     const monto = ing.monto || 0;
-    
+
     if (ing.estado === 'pendiente') {
       debtByType[tipo] = (debtByType[tipo] || 0) + monto;
     } else if (ing.estado === 'pagado') {
@@ -75,10 +76,10 @@ export const ClienteService = {
   /**
    * Fetch a single client with full details and relations.
    */
-  async getDetailedById(id: string): Promise<{ 
-    cliente: Cliente | null, 
-    ingresos: any[], 
-    documentos: any[] 
+  async getDetailedById(id: string): Promise<{
+    cliente: Cliente | null,
+    ingresos: any[],
+    documentos: any[]
   }> {
     const { data: cliente, error } = await supabase!
       .from('clientes')
@@ -122,16 +123,35 @@ export const ClienteService = {
   /**
    * Create a new client.
    */
-  async createCliente(data: Omit<Cliente, 'id' | 'created_at'>): Promise<Cliente | null> {
+  async createCliente(
+    data: Omit<Cliente, 'id' | 'created_at'> & {
+      valor_subsidio?: number;
+      descripcion_subsidio?: string
+    }
+  ): Promise<Cliente | null> {
+    const { valor_subsidio, descripcion_subsidio, ...clienteData } = data;
+
     const { data: newCliente, error } = await supabase!
       .from('clientes')
-      .insert([data])
+      .insert([{
+        ...clienteData,
+        tipo_tramite: clienteData.tipo_tramite || 'banco'
+      }])
       .select()
       .single();
 
     if (error) {
       console.error('Error creating cliente:', error.message);
-      return null;
+      throw error;
+    }
+
+    // Si es trámite de subsidio, creamos el registro de subsidio automáticamente
+    if (clienteData.tipo_tramite === 'subsidio' && valor_subsidio) {
+      await SubsidioService.create({
+        cliente_id: newCliente.id,
+        valor_total: valor_subsidio,
+        descripcion: descripcion_subsidio || ''
+      });
     }
 
     return newCliente;
@@ -167,9 +187,9 @@ export const ClienteService = {
       return { success: true };
     } catch (err: any) {
       console.error(`Error deleting cliente ${id}:`, err.message);
-      return { 
-        success: false, 
-        error: err.message || 'Hubo un problema al intentar eliminar el cliente y sus registros. Intenta nuevamente.' 
+      return {
+        success: false,
+        error: err.message || 'Hubo un problema al intentar eliminar el cliente y sus registros. Intenta nuevamente.'
       };
     }
   },

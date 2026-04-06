@@ -10,6 +10,7 @@ import type { Subsidio, Cliente } from '@/types';
 import UIModal from '@/components/ui/UIModal';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import DeleteConfirmModal from '@/components/shared/DeleteConfirmModal';
+import ClienteForm from '@/components/shared/ClienteForm';
 import Link from 'next/link';
 
 const formatCurrency = (n: number = 0) =>
@@ -37,6 +38,7 @@ export default function SubsidiosPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [openNewClienteModal, setOpenNewClienteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Subsidio | null>(null);
   const [editTarget, setEditTarget] = useState<Subsidio | null>(null);
 
@@ -45,6 +47,7 @@ export default function SubsidiosPage() {
   const [formValor, setFormValor] = useState('');
   const [formDescripcion, setFormDescripcion] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -61,27 +64,33 @@ export default function SubsidiosPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!formClienteId || !formValor) return;
     setSaving(true);
     
-    if (editTarget) {
-      // Update mode
-      await SubsidioService.update(editTarget.id, {
-        valor_total: parseFloat(formValor),
-        descripcion: formDescripcion,
-      });
-    } else {
-      // Create mode
-      await SubsidioService.create({
-        cliente_id: formClienteId,
-        valor_total: parseFloat(formValor),
-        descripcion: formDescripcion,
-      });
+    try {
+      if (editTarget) {
+        // Update mode
+        await SubsidioService.update(editTarget.id, {
+          valor_total: parseFloat(formValor),
+          descripcion: formDescripcion.toUpperCase(),
+        });
+      } else {
+        // Create mode
+        await SubsidioService.create({
+          cliente_id: formClienteId,
+          valor_total: parseFloat(formValor),
+          descripcion: formDescripcion.toUpperCase(),
+        });
+      }
+      handleCloseModal();
+      load();
+    } catch (err: any) {
+      setError(err?.message || 'Error al procesar el subsidio');
+      console.error('Submit error:', err);
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
-    handleCloseModal();
-    load();
   };
 
   const handleEditOpen = (s: Subsidio) => {
@@ -98,6 +107,7 @@ export default function SubsidiosPage() {
     setFormClienteId('');
     setFormValor('');
     setFormDescripcion('');
+    setError(null);
   };
 
   const handleDeleteConfirm = async () => {
@@ -142,16 +152,25 @@ export default function SubsidiosPage() {
             className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-[#D4A017]/5 focus:border-[#D4A017] outline-none transition-all shadow-sm"
           />
         </div>
-        <button
-          onClick={() => {
-            setEditTarget(null);
-            setOpenModal(true);
-          }}
-          className="h-14 bg-gradient-to-r from-[#D4A017] to-amber-400 hover:from-[#B8860B] hover:to-[#D4A017] text-white rounded-2xl font-black px-8 flex items-center gap-3 shadow-xl shadow-amber-100 transition-all hover:scale-[1.02] whitespace-nowrap"
-        >
-          <Plus className="w-5 h-5" />
-          Nuevo Subsidio
-        </button>
+        <div className="flex flex-wrap gap-4 items-center">
+          <button
+            onClick={() => setOpenNewClienteModal(true)}
+            className="h-14 bg-[#0B1E3F] hover:bg-[#1a2e4d] text-white rounded-2xl font-black px-8 flex items-center gap-3 shadow-xl shadow-blue-100 transition-all hover:scale-[1.02] whitespace-nowrap"
+          >
+            <Plus className="w-5 h-5" />
+            Nuevo Cliente (Subsidio)
+          </button>
+          <button
+            onClick={() => {
+              setEditTarget(null);
+              setOpenModal(true);
+            }}
+            className="h-14 bg-gradient-to-r from-[#D4A017] to-amber-400 hover:from-[#B8860B] hover:to-[#D4A017] text-white rounded-2xl font-black px-8 flex items-center gap-3 shadow-xl shadow-amber-100 transition-all hover:scale-[1.02] whitespace-nowrap"
+          >
+            <Plus className="w-5 h-5" />
+            Vincular Cliente Existente
+          </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -194,7 +213,7 @@ export default function SubsidiosPage() {
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4A017]/10 to-[#0F0A4D]/5 flex items-center justify-center text-[#0F0A4D] font-black text-sm">
                           {(s.cliente_nombre || '?').charAt(0)}
                         </div>
-                        <span className="font-bold text-[#0B1E3F] whitespace-nowrap">{s.cliente_nombre}</span>
+                        <span className="font-bold text-[#0B1E3F] whitespace-nowrap uppercase">{s.cliente_nombre}</span>
                       </div>
                     </td>
                     <td className="px-6 py-5 text-sm text-gray-500 font-medium">{s.cliente_cedula}</td>
@@ -257,6 +276,17 @@ export default function SubsidiosPage() {
         title={editTarget ? "Editar Subsidio" : "Registrar Nuevo Subsidio"}
       >
         <form onSubmit={handleSubmit} className="space-y-8 p-1">
+          {error && (
+            <div className="bg-rose-50 border-2 border-rose-100 p-4 rounded-[24px] flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300 mb-6">
+              <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0">
+                <TriangleAlert className="w-4 h-4 text-rose-600" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-rose-900 uppercase tracking-widest mt-1.5">Error</p>
+                <p className="text-sm font-bold text-rose-600/80 mt-1">{error}</p>
+              </div>
+            </div>
+          )}
           <div className={editTarget ? 'opacity-50 pointer-events-none' : ''}>
             <SearchableSelect
               label="Cliente"
@@ -318,6 +348,23 @@ export default function SubsidiosPage() {
             </button>
           </div>
         </form>
+      </UIModal>
+
+      {/* Full New Cliente (Subsidio) Modal */}
+      <UIModal
+        isOpen={openNewClienteModal}
+        onClose={() => setOpenNewClienteModal(false)}
+        title="Crear Nuevo Cliente de Subsidio"
+      >
+        <div className="p-1">
+          <ClienteForm 
+            defaultTipo="subsidio"
+            onSuccess={() => {
+              setOpenNewClienteModal(false);
+              load();
+            }}
+          />
+        </div>
       </UIModal>
 
       {/* Delete Confirm Modal */}

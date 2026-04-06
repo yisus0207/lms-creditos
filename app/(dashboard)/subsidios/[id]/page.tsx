@@ -44,7 +44,7 @@ export default function SubsidioDetailPage() {
       subsidio_id: id,
       monto: parseFloat(formMonto),
       fecha: formFecha,
-      observacion: formObservacion,
+      observacion: formObservacion.toUpperCase(),
     });
     setSaving(false);
     setOpenModal(false);
@@ -78,8 +78,8 @@ export default function SubsidioDetailPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <DashboardHeader
-        title={`Subsidio — ${subsidio.cliente_nombre}`}
-        description={subsidio.descripcion || 'Detalle del subsidio y registro de aportes.'}
+        title={`Subsidio — ${subsidio.cliente_nombre?.toUpperCase() || 'CLIENTE'}`}
+        description={subsidio.descripcion?.toUpperCase() || 'Detalle del subsidio y registro de aportes.'}
       />
 
       {/* Back link */}
@@ -154,7 +154,7 @@ export default function SubsidioDetailPage() {
                   </div>
                 </div>
                 {ab.observacion && (
-                  <p className="text-sm text-gray-400 italic max-w-xs text-right">{ab.observacion}</p>
+                  <p className="text-sm text-gray-400 italic max-w-xs text-right uppercase">{ab.observacion}</p>
                 )}
               </div>
             ))}

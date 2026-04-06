@@ -45,7 +45,7 @@ export default function IngresoTable({ ingresos, onEdit, onDelete }: IngresoTabl
             {ingresos.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50/50 transition-all group">
                 <td className="px-10 py-6">
-                  <span className="text-sm font-black text-[#0F0A4D] group-hover:text-[#D4A017] transition-colors">
+                  <span className="text-sm font-black text-[#0F0A4D] group-hover:text-[#D4A017] transition-colors uppercase">
                     {item.cliente_nombre}
                   </span>
                 </td>

@@ -14,7 +14,8 @@ export const OperacionService = {
     // 1. Fetch all clients
     const { data: clientes, error: cliError } = await supabase!
       .from('clientes')
-      .select('*');
+      .select('*')
+      .or(`tipo_tramite.eq.banco,tipo_tramite.is.null`);
 
     if (cliError) {
       console.error('Error fetching clients for operations:', cliError.message);
@@ -36,7 +37,7 @@ export const OperacionService = {
 
     for (const cliente of clientes) {
       let op = operations?.find(o => o.cliente_id === cliente.id);
-      
+
       if (!op) {
         // Create a "virtual" or initial operation in DB if missing during load
         // Note: For large datasets, this should be done in bulk or on-demand
