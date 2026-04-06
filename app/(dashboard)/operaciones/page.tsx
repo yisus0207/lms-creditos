@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import DashboardHeader from '@/components/layout/DashboardHeader';
-import { Plus, Eye, Trash2, Search, TriangleAlert, X } from 'lucide-react';
+import { Plus, Eye, Trash2, Search, TriangleAlert, X, Pencil } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { SubsidioService } from '@/services/subsidio.service';
 import { ClienteService } from '@/services/cliente.service';
@@ -38,6 +38,7 @@ export default function SubsidiosPage() {
   const [search, setSearch] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Subsidio | null>(null);
+  const [editTarget, setEditTarget] = useState<Subsidio | null>(null);
 
   // Form state
   const [formClienteId, setFormClienteId] = useState('');
@@ -58,21 +59,45 @@ export default function SubsidiosPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formClienteId || !formValor) return;
     setSaving(true);
-    await SubsidioService.create({
-      cliente_id: formClienteId,
-      valor_total: parseFloat(formValor),
-      descripcion: formDescripcion,
-    });
+    
+    if (editTarget) {
+      // Update mode
+      await SubsidioService.update(editTarget.id, {
+        valor_total: parseFloat(formValor),
+        descripcion: formDescripcion,
+      });
+    } else {
+      // Create mode
+      await SubsidioService.create({
+        cliente_id: formClienteId,
+        valor_total: parseFloat(formValor),
+        descripcion: formDescripcion,
+      });
+    }
+
     setSaving(false);
+    handleCloseModal();
+    load();
+  };
+
+  const handleEditOpen = (s: Subsidio) => {
+    setEditTarget(s);
+    setFormClienteId(s.cliente_id);
+    setFormValor(s.valor_total.toString());
+    setFormDescripcion(s.descripcion || '');
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
     setOpenModal(false);
+    setEditTarget(null);
     setFormClienteId('');
     setFormValor('');
     setFormDescripcion('');
-    load();
   };
 
   const handleDeleteConfirm = async () => {
@@ -118,7 +143,10 @@ export default function SubsidiosPage() {
           />
         </div>
         <button
-          onClick={() => setOpenModal(true)}
+          onClick={() => {
+            setEditTarget(null);
+            setOpenModal(true);
+          }}
           className="h-14 bg-gradient-to-r from-[#D4A017] to-amber-400 hover:from-[#B8860B] hover:to-[#D4A017] text-white rounded-2xl font-black px-8 flex items-center gap-3 shadow-xl shadow-amber-100 transition-all hover:scale-[1.02] whitespace-nowrap"
         >
           <Plus className="w-5 h-5" />
@@ -199,6 +227,13 @@ export default function SubsidiosPage() {
                           <Eye className="w-4 h-4" />
                         </Link>
                         <button
+                          onClick={() => handleEditOpen(s)}
+                          className="p-2.5 text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all"
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => setDeleteTarget(s)}
                           className="p-2.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                           title="Eliminar"
@@ -215,20 +250,27 @@ export default function SubsidiosPage() {
         </div>
       </div>
 
-      {/* Create Modal */}
-      <UIModal isOpen={openModal} onClose={() => setOpenModal(false)} title="Registrar Nuevo Subsidio">
-        <form onSubmit={handleCreate} className="space-y-8 p-1">
-          <SearchableSelect
-            label="Cliente"
-            placeholder="Seleccionar cliente..."
-            value={formClienteId}
-            onChange={setFormClienteId}
-            options={clientes.map(c => ({
-              id: c.id,
-              label: c.nombre,
-              sublabel: c.numero_documento
-            }))}
-          />
+      {/* Form Modal (Create/Edit) */}
+      <UIModal 
+        isOpen={openModal} 
+        onClose={handleCloseModal} 
+        title={editTarget ? "Editar Subsidio" : "Registrar Nuevo Subsidio"}
+      >
+        <form onSubmit={handleSubmit} className="space-y-8 p-1">
+          <div className={editTarget ? 'opacity-50 pointer-events-none' : ''}>
+            <SearchableSelect
+              label="Cliente"
+              placeholder="Seleccionar cliente..."
+              value={formClienteId}
+              onChange={setFormClienteId}
+              options={clientes.map(c => ({
+                id: c.id,
+                label: c.nombre,
+                sublabel: c.numero_documento
+              }))}
+            />
+            {editTarget && <p className="text-[10px] text-[#D4A017] font-bold mt-2">El cliente no se puede cambiar al editar.</p>}
+          </div>
           
           <div>
             <label className="block text-[11px] font-black text-[#0F0A4D]/40 uppercase tracking-widest mb-3">Valor Total del Subsidio</label>
@@ -260,7 +302,7 @@ export default function SubsidiosPage() {
           <div className="flex gap-4 pt-4">
             <button 
               type="button" 
-              onClick={() => setOpenModal(false)} 
+              onClick={handleCloseModal} 
               className="flex-1 h-14 rounded-[24px] bg-gray-100 text-gray-500 font-black hover:bg-gray-200 transition-all hover:scale-[1.02] active:scale-95"
             >
               Cancelar
@@ -272,7 +314,7 @@ export default function SubsidiosPage() {
             >
               {saving ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full" />
-              ) : 'Registrar Subsidio'}
+              ) : (editTarget ? 'Guardar Cambios' : 'Registrar Subsidio')}
             </button>
           </div>
         </form>

@@ -114,6 +114,24 @@ export const SubsidioService = {
   },
 
   /**
+   * Update an existing subsidio.
+   */
+  async update(id: string, data: { valor_total?: number; descripcion?: string }): Promise<Subsidio | null> {
+    const { data: result, error } = await supabase!
+      .from('subsidios')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating subsidio:', error.message);
+      return null;
+    }
+    return result;
+  },
+
+  /**
    * Quick summary for dashboard.
    */
   async getSummary() {
