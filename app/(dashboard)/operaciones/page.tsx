@@ -194,7 +194,7 @@ export default function SubsidiosPage() {
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4A017]/10 to-[#0F0A4D]/5 flex items-center justify-center text-[#0F0A4D] font-black text-sm">
                           {(s.cliente_nombre || '?').charAt(0)}
                         </div>
-                        <span className="font-bold text-[#0B1E3F] truncate max-w-[160px]">{s.cliente_nombre}</span>
+                        <span className="font-bold text-[#0B1E3F] whitespace-nowrap">{s.cliente_nombre}</span>
                       </div>
                     </td>
                     <td className="px-6 py-5 text-sm text-gray-500 font-medium">{s.cliente_cedula}</td>

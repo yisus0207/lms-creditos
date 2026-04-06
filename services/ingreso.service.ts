@@ -93,39 +93,8 @@ export const IngresoService = {
       return null;
     }
 
-    // AUTOMATIZACIÓN: 
-    // Actualizar el estado de la operación (Kanban del cliente) según el tipo de ingreso/cobro que se registre.
-    let nuevoEstado: EstadoOperacion | null = null;
-    if (data.tipo === 'viabilidad') nuevoEstado = 'viabilidad';
-    if (data.tipo === 'documentos') nuevoEstado = 'documentos';
-    if (data.tipo === 'comision') nuevoEstado = 'aprobado';
-
-    if (nuevoEstado) {
-      // Intentamos obtener la operación existente
-      const { data: ops } = await supabase!
-        .from('operaciones')
-        .select('id')
-        .eq('cliente_id', data.cliente_id)
-        .limit(1);
-
-      if (ops && ops.length > 0) {
-        // Actualizamos si existe
-        await supabase!
-          .from('operaciones')
-          .update({ estado: nuevoEstado })
-          .eq('id', ops[0].id);
-      } else {
-        // Creamos la operación directamente en el nuevo estado si no existía (ej. cliente recién creado)
-        await supabase!
-          .from('operaciones')
-          .insert([{
-            cliente_id: data.cliente_id,
-            estado: nuevoEstado,
-            banco: 'PENDIENTE',
-            monto_credito: 0
-          }]);
-      }
-    }
+    // AUTOMATIZACIÓN: Sincronizar estado basado en el nuevo registro
+    await this.syncClientStatus(data.cliente_id);
 
     return newIngreso;
   },
@@ -134,6 +103,9 @@ export const IngresoService = {
    * Update payment status.
    */
   async updateStatus(id: string, estado: EstadoIngreso): Promise<boolean> {
+    // Obtenemos el ingreso para saber el cliente_id antes de actualizar
+    const { data: ing } = await supabase!.from('ingresos').select('cliente_id').eq('id', id).single();
+
     const { error } = await supabase!
       .from('ingresos')
       .update({ estado })
@@ -142,6 +114,100 @@ export const IngresoService = {
     if (error) {
       console.error(`Error updating ingreso status ${id}:`, error.message);
       return false;
+    }
+
+    // Sincronizamos por si acaso (aunque la lógica actual es por registro, no por pago, mantenemos la consistencia)
+    if (ing?.cliente_id) {
+       await this.syncClientStatus(ing.cliente_id);
+    }
+
+    return true;
+  },
+
+  /**
+   * Update an income record.
+   */
+  async update(id: string, data: Partial<Ingreso>): Promise<Ingreso | null> {
+    const { data: updatedIngreso, error } = await supabase!
+      .from('ingresos')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(`Error updating ingreso ${id}:`, error.message);
+      return null;
+    }
+
+    // Si se cambió el tipo o el cliente, sincronizamos el estado
+    if (updatedIngreso?.cliente_id) {
+       await this.syncClientStatus(updatedIngreso.cliente_id);
+    }
+
+    return updatedIngreso;
+  },
+
+  /**
+   * Sincroniza el estado de la operación del cliente basado en sus registros de ingresos.
+   * La lógica es: el estado será la etapa MAS AVANZADA que tenga al menos un registro (pagado o pendiente).
+   */
+  async syncClientStatus(clientId: string): Promise<void> {
+    const { data: ingresos } = await supabase!
+      .from('ingresos')
+      .select('tipo')
+      .eq('cliente_id', clientId);
+
+    if (!ingresos || ingresos.length === 0) return;
+
+    const tipos = ingresos.map(i => i.tipo);
+    
+    let nuevoEstado: EstadoOperacion = 'viabilidad';
+    
+    // Jerarquía: comision (aprobado) > documentos > viabilidad
+    if (tipos.includes('comision')) {
+      nuevoEstado = 'aprobado';
+    } else if (tipos.includes('documentos')) {
+      nuevoEstado = 'documentos';
+    } else {
+      nuevoEstado = 'viabilidad';
+    }
+
+    // Actualizar o crear operación
+    const { data: ops } = await supabase!.from('operaciones').select('id').eq('cliente_id', clientId).limit(1);
+
+    if (ops && ops.length > 0) {
+      await supabase!.from('operaciones').update({ estado: nuevoEstado }).eq('id', ops[0].id);
+    } else {
+      await supabase!.from('operaciones').insert([{
+        cliente_id: clientId,
+        estado: nuevoEstado,
+        banco: 'PENDIENTE',
+        monto_credito: 0
+      }]);
+    }
+  },
+
+  /**
+   * Delete an income record.
+   */
+  async delete(id: string): Promise<boolean> {
+    // Obtenemos el cliente_id antes de borrar
+    const { data: ing } = await supabase!.from('ingresos').select('cliente_id').eq('id', id).single();
+    
+    const { error } = await supabase!
+      .from('ingresos')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error(`Error deleting ingreso ${id}:`, error.message);
+      return false;
+    }
+
+    // Sincronizamos el estado tras el borrado
+    if (ing?.cliente_id) {
+       await this.syncClientStatus(ing.cliente_id);
     }
 
     return true;

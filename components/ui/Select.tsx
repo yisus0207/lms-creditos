@@ -16,6 +16,7 @@ interface SelectProps {
   placeholder?: string;
   label?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export default function Select({ 
@@ -24,7 +25,8 @@ export default function Select({
   onChange, 
   placeholder = "Seleccionar...", 
   label,
-  className 
+  className,
+  disabled = false
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,10 +53,11 @@ export default function Select({
       )}
       
       <div 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
         className={cn(
-          "w-full h-14 bg-gray-50 border-none rounded-2xl px-6 flex items-center justify-between cursor-pointer transition-all duration-300",
-          isOpen ? "bg-white ring-2 ring-[#D4A017]/20 shadow-lg" : "hover:bg-gray-100/80"
+          "w-full h-14 border-none rounded-2xl px-6 flex items-center justify-between transition-all duration-300",
+          disabled ? "bg-gray-100/50 cursor-not-allowed opacity-60" : "bg-gray-50 cursor-pointer hover:bg-gray-100/80",
+          isOpen ? "bg-white ring-2 ring-[#D4A017]/20 shadow-lg" : ""
         )}
       >
         <span className={cn("text-sm font-medium", !selectedOption ? "text-gray-300" : "text-[#0F0A4D]")}>

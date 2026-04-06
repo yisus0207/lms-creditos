@@ -1,12 +1,15 @@
 import React from 'react';
 import Badge from '@/components/ui/Badge';
 import { IngresoWithCliente } from '@/services/ingreso.service';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface IngresoTableProps {
   ingresos: IngresoWithCliente[];
+  onEdit?: (ingreso: IngresoWithCliente) => void;
+  onDelete?: (ingreso: IngresoWithCliente) => void;
 }
 
-export default function IngresoTable({ ingresos }: IngresoTableProps) {
+export default function IngresoTable({ ingresos, onEdit, onDelete }: IngresoTableProps) {
   const getTipoStyles = (tipo: string) => {
     switch (tipo?.toLowerCase()) {
       case 'viabilidad': return 'bg-purple-50 text-purple-600 border-purple-100';
@@ -35,6 +38,7 @@ export default function IngresoTable({ ingresos }: IngresoTableProps) {
               <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Monto</th>
               <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Estado</th>
               <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Fecha</th>
+              <th className="px-10 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -62,8 +66,26 @@ export default function IngresoTable({ ingresos }: IngresoTableProps) {
                 </td>
                 <td className="px-10 py-6 text-right">
                   <span className="text-sm font-medium text-gray-400 whitespace-nowrap">
-                    {item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : 'N/A'}
+                    {item ? new Date(item.fecha).toLocaleDateString('es-ES') : 'N/A'}
                   </span>
+                </td>
+                <td className="px-10 py-6">
+                  <div className="flex items-center justify-end gap-3 transition-all duration-300">
+                    <button 
+                      onClick={() => onEdit?.(item)}
+                      className="p-2 text-gray-400 hover:text-[#D4A017] hover:bg-amber-50 rounded-xl transition-all shadow-sm active:scale-95"
+                      title="Editar registro"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => onDelete?.(item)}
+                      className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all shadow-sm active:scale-95"
+                      title="Eliminar registro"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

@@ -17,6 +17,7 @@ interface SearchableSelectProps {
   placeholder?: string;
   label?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export default function SearchableSelect({ 
@@ -25,7 +26,8 @@ export default function SearchableSelect({
   onChange, 
   placeholder = "Seleccionar...", 
   label,
-  className 
+  className,
+  disabled = false
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,10 +60,11 @@ export default function SearchableSelect({
       )}
       
       <div 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
         className={cn(
-          "w-full h-16 bg-gray-50 border-2 rounded-[24px] px-8 flex items-center justify-between cursor-pointer transition-all duration-300 group",
-          isOpen ? "border-[#D4A017] bg-white ring-4 ring-amber-400/5 shadow-xl" : "border-gray-100 hover:border-gray-200"
+          "w-full h-16 border-2 rounded-[24px] px-8 flex items-center justify-between transition-all duration-300 group",
+          disabled ? "bg-gray-100/50 border-gray-100 cursor-not-allowed opacity-60" : "bg-gray-50 cursor-pointer",
+          isOpen ? "border-[#D4A017] bg-white ring-4 ring-amber-400/5 shadow-xl" : !disabled && "border-gray-100 hover:border-gray-200"
         )}
       >
         <div className="flex flex-col">

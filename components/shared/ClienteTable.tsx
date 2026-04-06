@@ -83,7 +83,7 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
                     <div className="w-10 h-10 rounded-full bg-[#0F0A4D]/5 flex items-center justify-center text-[#0F0A4D] font-bold text-sm">
                       {cliente.nombre.charAt(0)}
                     </div>
-                    <span className="font-semibold text-[#0F0A4D] truncate max-w-[150px]">{cliente.nombre}</span>
+                    <span className="font-semibold text-[#0F0A4D] whitespace-nowrap">{cliente.nombre}</span>
                   </div>
                 </td>
                 <td className="px-6 py-5 text-sm text-gray-500 font-medium">{cliente.numero_documento}</td>
@@ -112,7 +112,7 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
                   </Link>
                   <button
                     onClick={() => onDelete(cliente.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-gray-300 hover:text-red-500 transition-colors"
                     title="Eliminar"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -11,17 +11,18 @@ import Select from '@/components/ui/Select';
 interface IngresoFormProps {
   onSuccess: () => void;
   onCancel: () => void;
+  initialData?: any; // Para modo edición
 }
 
-export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
+export default function IngresoForm({ onSuccess, onCancel, initialData }: IngresoFormProps) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    cliente_id: '',
-    tipo: 'viabilidad' as TipoIngreso,
-    monto: '',
-    estado: 'pendiente' as EstadoIngreso,
-    fecha: new Date().toISOString().split('T')[0],
+    cliente_id: initialData?.cliente_id || '',
+    tipo: (initialData?.tipo || 'viabilidad') as TipoIngreso,
+    monto: initialData?.monto?.toString() || '',
+    estado: (initialData?.estado || 'pendiente') as EstadoIngreso,
+    fecha: initialData?.fecha || new Date().toISOString().split('T')[0],
   });
 
   useEffect(() => {
@@ -38,19 +39,31 @@ export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
     
     setLoading(true);
     try {
-      const result = await IngresoService.create({
-        cliente_id: formData.cliente_id,
-        tipo: formData.tipo,
-        monto: Number(formData.monto),
-        estado: formData.estado,
-        fecha: formData.fecha,
-      });
+      let result;
+      if (initialData?.id) {
+        // MODO EDICIÓN
+        result = await IngresoService.update(initialData.id, {
+          tipo: formData.tipo,
+          monto: Number(formData.monto),
+          estado: formData.estado,
+          fecha: formData.fecha,
+        });
+      } else {
+        // MODO CREACIÓN
+        result = await IngresoService.create({
+          cliente_id: formData.cliente_id,
+          tipo: formData.tipo,
+          monto: Number(formData.monto),
+          estado: formData.estado,
+          fecha: formData.fecha,
+        });
+      }
       
       if (result) {
         onSuccess();
       }
     } catch (err) {
-      console.error('Error creating ingreso:', err);
+      console.error('Error saving ingreso:', err);
     } finally {
       setLoading(false);
     }
@@ -68,7 +81,8 @@ export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
             sublabel: `Cédula: ${c.numero_documento}`
           }))}
           value={formData.cliente_id}
-          onChange={(val) => setFormData({ ...formData, cliente_id: val })}
+          onChange={(val) => !initialData && setFormData({ ...formData, cliente_id: val })}
+          disabled={!!initialData} // No se puede cambiar el cliente en edición
         />
 
         <div className="grid grid-cols-2 gap-6">
@@ -82,6 +96,7 @@ export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
             ]}
             value={formData.tipo}
             onChange={(val) => setFormData({ ...formData, tipo: val as TipoIngreso })}
+            disabled={!!initialData}
           />
 
           {/* Estado */}
@@ -93,6 +108,7 @@ export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
             ]}
             value={formData.estado}
             onChange={(val) => setFormData({ ...formData, estado: val as EstadoIngreso })}
+            disabled={!!initialData}
           />
         </div>
 
@@ -118,9 +134,10 @@ export default function IngresoForm({ onSuccess, onCancel }: IngresoFormProps) {
             <input
               type="date"
               required
+              disabled={!!initialData}
               value={formData.fecha}
               onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
-              className="w-full h-16 px-6 bg-gray-50/50 border-2 border-gray-100 rounded-[24px] text-sm font-black text-[#0F0A4D] focus:ring-4 focus:ring-amber-400/5 focus:border-[#D4A017] focus:bg-white outline-none transition-all"
+              className="w-full h-16 px-6 bg-gray-50/50 border-2 border-gray-100 rounded-[24px] text-sm font-black text-[#0F0A4D] focus:ring-4 focus:ring-amber-400/5 focus:border-[#D4A017] focus:bg-white outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
         </div>

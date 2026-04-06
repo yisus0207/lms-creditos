@@ -7,6 +7,7 @@ import IngresoFilters from '@/components/shared/IngresoFilters';
 import IngresoTable from '@/components/shared/IngresoTable';
 import IngresoForm from '@/components/shared/IngresoForm';
 import UIModal from '@/components/ui/UIModal';
+import DeleteConfirmModal from '@/components/shared/DeleteConfirmModal';
 import { cn } from '@/lib/utils';
 import { IngresoService, IngresoWithCliente } from '@/services/ingreso.service';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -20,7 +21,15 @@ export default function IngresosPage() {
   const [search, setSearch] = useState('');
   const [type, setType] = useState('');
   const [status, setStatus] = useState('');
+  
+  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedIngreso, setSelectedIngreso] = useState<IngresoWithCliente | null>(null);
+  
+  // Delete confirm state
+  const [deleteTarget, setDeleteTarget] = useState<IngresoWithCliente | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -46,7 +55,29 @@ export default function IngresosPage() {
 
   const handleSuccess = () => {
     setIsModalOpen(false);
+    setSelectedIngreso(null);
     loadData();
+  };
+
+  const handleEdit = (ingreso: IngresoWithCliente) => {
+    setSelectedIngreso(ingreso);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      const success = await IngresoService.delete(deleteTarget.id);
+      if (success) {
+        setDeleteTarget(null);
+        loadData();
+      }
+    } catch (err) {
+      console.error('Error deleting ingreso:', err);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   useEffect(() => {
@@ -84,7 +115,10 @@ export default function IngresosPage() {
         description="Seguimiento financiero detallado de pagos y cobros pendientes."
         actions={
           <Button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setSelectedIngreso(null);
+              setIsModalOpen(true);
+            }}
             variant="primary"
             className="gap-2"
           >
@@ -115,7 +149,11 @@ export default function IngresosPage() {
             </div>
           ) : currentIngresos.length > 0 ? (
             <div className="flex flex-col">
-              <IngresoTable ingresos={currentIngresos} />
+              <IngresoTable 
+                ingresos={currentIngresos} 
+                onEdit={handleEdit}
+                onDelete={setDeleteTarget}
+              />
               
               {/* Pagination UI */}
               {totalPages > 1 && (
@@ -168,14 +206,34 @@ export default function IngresosPage() {
 
       <UIModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Registrar Cobro"
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedIngreso(null);
+        }}
+        title={selectedIngreso ? "Editar Cobro" : "Registrar Cobro"}
       >
         <IngresoForm 
           onSuccess={handleSuccess}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={() => {
+            setIsModalOpen(false);
+            setSelectedIngreso(null);
+          }}
+          initialData={selectedIngreso}
         />
       </UIModal>
+
+      <DeleteConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        isLoading={isDeleting}
+        title="¿Eliminar registro de cobro?"
+        description={
+          <>
+            ¿Estás seguro de que deseas eliminar este registro de <span className="font-bold text-[#0F0A4D]">{deleteTarget?.tipo?.toUpperCase()}</span> por valor de <span className="font-bold text-[#D4A017]">${deleteTarget?.monto?.toLocaleString()}</span>? Esta acción no se puede deshacer y ajustará el estado del cliente automáticamente.
+          </>
+        }
+      />
     </div>
   );
 }
