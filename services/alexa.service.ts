@@ -60,10 +60,10 @@ class ChatService {
 
       // 4. Estadísticas del Pipeline
       const pipeline = {
-        viabilidad: operaciones?.filter(o => o.etapa === 'viabilidad').length || 0,
-        documentacion: operaciones?.filter(o => o.etapa === 'documentacion').length || 0,
-        banco: operaciones?.filter(o => o.etapa === 'banco').length || 0,
-        aprobado: operaciones?.filter(o => o.etapa === 'aprobado').length || 0,
+        viabilidad: operaciones?.filter(o => o.estado === 'viabilidad').length || 0,
+        documentacion: operaciones?.filter(o => o.estado === 'documentos').length || 0,
+        banco: operaciones?.filter(o => o.estado === 'banco').length || 0,
+        aprobado: operaciones?.filter(o => o.estado === 'aprobado').length || 0,
       };
 
       const result = {
@@ -71,9 +71,9 @@ class ChatService {
         clientesList: clientes?.slice(0, 20).map(c => `${c.nombre} (${c.estado})`) || [], 
         operaciones: operaciones?.map(o => ({
           cliente: o.clientes?.nombre,
-          banco: o.entidad_bancaria,
+          banco: o.banco,
           monto: o.monto_credito,
-          etapa: o.etapa
+          etapa: o.estado
         })) || [],
         stats: {
           totalIngresos,

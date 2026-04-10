@@ -24,6 +24,7 @@ export default function ClientesPage() {
     id: null,
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
 
   const loadClientes = useCallback(async () => {
@@ -58,10 +59,22 @@ export default function ClientesPage() {
     setConfirmModal({ isOpen: false, id: null });
   };
 
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const filteredClientes = clientes.filter(c =>
+    (c.tipo_tramite !== 'subsidio') && (
+      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.numero_documento.includes(searchTerm)
+    )
+  );
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentClientes = clientes.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(clientes.length / itemsPerPage);
+  const currentClientes = filteredClientes.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredClientes.length / itemsPerPage);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -113,6 +126,9 @@ export default function ClientesPage() {
             <ClienteTable
               clientes={currentClientes}
               onDelete={handleDelete}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              startIndex={indexOfFirstItem}
             />
 
             {/* Pagination UI */}

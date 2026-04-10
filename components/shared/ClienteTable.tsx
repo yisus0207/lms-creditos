@@ -8,17 +8,13 @@ import Badge from '../ui/Badge';
 interface ClienteTableProps {
   clientes: Cliente[];
   onDelete: (id: string) => void;
+  searchTerm: string;
+  onSearchChange: (searchTerm: string) => void;
+  startIndex: number;
 }
 
-export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+export default function ClienteTable({ clientes, onDelete, searchTerm, onSearchChange, startIndex }: ClienteTableProps) {
 
-  const filteredClientes = clientes.filter(c =>
-    (c.tipo_tramite !== 'subsidio') && (
-      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.numero_documento.includes(searchTerm)
-    )
-  );
 
   const getStatusVariant = (estado?: string): 'info' | 'success' | 'warning' | 'error' | 'neutral' => {
     switch (estado) {
@@ -53,7 +49,7 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
             placeholder="Buscar por nombre o documento..."
             className="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0F0A4D]/10 focus:border-[#0F0A4D] transition-all text-sm"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
         <button className="flex items-center gap-2 px-6 py-3 bg-gray-50 text-gray-600 rounded-2xl border border-gray-100 hover:bg-gray-100 transition-all text-sm font-medium">
@@ -78,12 +74,12 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filteredClientes.map((cliente) => (
+            {clientes.map((cliente, index) => (
               <tr key={cliente.id} className="hover:bg-gray-50/50 transition-colors group">
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#0F0A4D]/5 flex items-center justify-center text-[#0F0A4D] font-bold text-sm">
-                      {cliente.nombre.charAt(0)}
+                      {startIndex + index + 1}
                     </div>
                     <span className="font-semibold text-[#0F0A4D] whitespace-nowrap uppercase">{cliente.nombre}</span>
                   </div>
@@ -124,7 +120,7 @@ export default function ClienteTable({ clientes, onDelete }: ClienteTableProps) 
                 </td>
               </tr>
             ))}
-            {filteredClientes.length === 0 && (
+            {clientes.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center text-gray-400 italic">
                   No hay clientes registrados o que coincidan con la búsqueda.

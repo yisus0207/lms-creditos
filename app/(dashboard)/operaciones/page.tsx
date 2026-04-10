@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import DashboardHeader from '@/components/layout/DashboardHeader';
-import { Plus, Eye, Trash2, Search, TriangleAlert, X, Pencil } from 'lucide-react';
+import { Plus, Eye, Trash2, Search, TriangleAlert, X, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import { SubsidioService } from '@/services/subsidio.service';
 import { ClienteService } from '@/services/cliente.service';
@@ -37,6 +38,8 @@ export default function SubsidiosPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [openModal, setOpenModal] = useState(false);
   const [openNewClienteModal, setOpenNewClienteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Subsidio | null>(null);
@@ -117,10 +120,21 @@ export default function SubsidiosPage() {
     load();
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const filtered = subsidios.filter(s =>
     s.cliente_nombre?.toLowerCase().includes(search.toLowerCase()) ||
     s.cliente_cedula?.includes(search)
   );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentSubsidios = filtered.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   const totalSubsidios = subsidios.reduce((a, s) => a + s.valor_total, 0);
   const totalAbonado = subsidios.reduce((a, s) => a + (s.total_abonos || 0), 0);
@@ -204,14 +218,14 @@ export default function SubsidiosPage() {
                     </div>
                   </td>
                 </tr>
-              ) : filtered.map(s => {
+              ) : currentSubsidios.map((s, index) => {
                 const pct = s.valor_total > 0 ? Math.min(100, Math.round(((s.total_abonos || 0) / s.valor_total) * 100)) : 0;
                 return (
                   <tr key={s.id} className="hover:bg-[#D4A017]/[0.02] transition-colors group">
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4A017]/10 to-[#0F0A4D]/5 flex items-center justify-center text-[#0F0A4D] font-black text-sm">
-                          {(s.cliente_nombre || '?').charAt(0)}
+                          {indexOfFirstItem + index + 1}
                         </div>
                         <span className="font-bold text-[#0B1E3F] whitespace-nowrap uppercase">{s.cliente_nombre}</span>
                       </div>
@@ -267,6 +281,47 @@ export default function SubsidiosPage() {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination UI */}
+        {totalPages > 1 && (
+          <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex items-center justify-between mt-auto">
+            <div className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
+              Página {currentPage} de {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => paginate(num)}
+                    className={cn(
+                      "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black transition-all",
+                      currentPage === num
+                        ? "bg-[#D4A017] text-[#0F0A4D] shadow-lg shadow-amber-900/10"
+                        : "bg-white border border-gray-100 text-gray-400 hover:bg-gray-100"
+                    )}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Form Modal (Create/Edit) */}
