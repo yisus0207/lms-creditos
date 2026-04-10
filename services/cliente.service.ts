@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import type { Cliente, Ingreso } from '@/types';
+import type { Cliente, Ingreso, Documento } from '@/types';
 import { SubsidioService } from './subsidio.service';
+import { DocumentoService } from './documento.service';
 
 // Utility to calculate real net debt per category
 function calculateNetDebt(ingresos: any[] | undefined): number {
@@ -162,9 +163,13 @@ export const ClienteService = {
    */
   async deleteCliente(id: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // 1. Eliminar documentos asociados
-      const { error: errDocs } = await supabase!.from('documentos').delete().eq('cliente_id', id);
-      if (errDocs) console.warn('Error borrando documentos:', errDocs.message);
+      // 1. Obtener documentos para borrar archivos físicos del Storage
+      const { data: docs } = await supabase.from('documentos').select('*').eq('cliente_id', id);
+      if (docs && docs.length > 0) {
+        for (const doc of docs) {
+          await DocumentoService.deleteDocumento(doc as Documento);
+        }
+      }
 
       // 2. Eliminar ingresos/pagos asociados
       const { error: errIngresos } = await supabase!.from('ingresos').delete().eq('cliente_id', id);

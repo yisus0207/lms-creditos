@@ -137,4 +137,73 @@ export const DocumentoService = {
 
     return await Packer.toBuffer(doc);
   },
+  /**
+   * Deletes a document both from Supabase Storage and the Database
+   */
+  async deleteDocumento(doc: Documento): Promise<boolean> {
+    try {
+      if (doc.url_archivo) {
+        const filePath = this.extractPathFromUrl(doc.url_archivo);
+        
+        if (filePath) {
+          const { data, error: storageError } = await supabase.storage
+            .from('documentos')
+            .remove([filePath]);
+          
+          if (storageError) {
+            console.error('FAILED to delete from Storage:', storageError);
+          } else if (data && data.length === 0) {
+            console.warn('Supabase Storage: File not found for deletion at', filePath);
+          } else {
+            console.log('Successfully deleted from Storage:', data);
+          }
+        }
+      }
+
+      const { error: dbError } = await supabase
+        .from('documentos')
+        .delete()
+        .eq('id', doc.id);
+
+      if (dbError) throw dbError;
+      return true;
+    } catch (err) {
+      console.error('Error in deleteDocumento:', err);
+      return false;
+    }
+  },
+
+  /**
+   * Internal helper to extract the safe storage path from a public Supabase URL
+   */
+  extractPathFromUrl(url: string): string | null {
+    try {
+      // Búscamos el nombre del bucket en la URL de forma flexible
+      const bucket = 'documentos';
+      const searchStr = `/${bucket}/`;
+      
+      if (!url.includes(searchStr)) {
+        // Fallback: tratar de encontrarlo después del /public/
+        const publicMarker = '/public/';
+        if (url.includes(publicMarker)) {
+          const parts = url.split(publicMarker);
+          // documents/clientId/file.pdf
+          const afterPublic = parts[1];
+          const pathParts = afterPublic.split('/');
+          pathParts.shift(); // Quitar el nombre del bucket
+          return decodeURIComponent(pathParts.join('/').split('?')[0]);
+        }
+        return null;
+      }
+
+      const pathPart = url.split(searchStr).pop();
+      if (!pathPart) return null;
+      
+      // Quitar posibles parámetros de consulta (?t=...) y decodificar
+      return decodeURIComponent(pathPart.split('?')[0]);
+    } catch (e) {
+      console.error('Error parsing storage URL:', e);
+      return null;
+    }
+  }
 };

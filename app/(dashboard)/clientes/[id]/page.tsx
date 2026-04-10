@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ClienteService } from '@/services/cliente.service';
+import { DocumentoService } from '@/services/documento.service';
 import type { Cliente, Ingreso, Documento } from '@/types';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 import StatusTracker from '@/components/shared/StatusTracker';
@@ -46,27 +47,10 @@ export default function ClienteDetailPage() {
 
   const handleDeleteDocument = async () => {
     if (!deleteTarget) return;
-
     setIsDeleting(true);
     try {
-      if (deleteTarget.url_archivo) {
-        // Extraer el path del archivo de forma robusta (todo lo que va después del bucket 'documentos/')
-        const match = deleteTarget.url_archivo.match(/\/storage\/v1\/object\/public\/documentos\/(.+)$/);
-        if (match && match[1]) {
-          const filePath = decodeURIComponent(match[1]);
-          const { error: storageError } = await supabase.storage
-            .from('documentos')
-            .remove([filePath]);
-          if (storageError) console.error('Error al eliminar fichero del Storage:', storageError);
-        }
-      }
-
-      const { error: dbError } = await supabase
-        .from('documentos')
-        .delete()
-        .eq('id', deleteTarget.id);
-
-      if (dbError) throw dbError;
+      const success = await DocumentoService.deleteDocumento(deleteTarget);
+      if (!success) throw new Error('Error al eliminar el documento');
       
       setDeleteTarget(null);
       fetchDetail();
