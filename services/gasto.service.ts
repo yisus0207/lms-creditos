@@ -30,11 +30,26 @@ export const GastoService = {
   },
 
   async delete(id: string): Promise<boolean> {
-    const { error } = await supabase!.from('gastos').delete().eq('id', id);
+    const { error } = await supabase.from('gastos').delete().eq('id', id);
     if (error) {
       console.error('Error deleting gasto:', error.message);
       return false;
     }
     return true;
+  },
+
+  async update(id: string, payload: Partial<Gasto>): Promise<Gasto | null> {
+    const { data, error } = await supabase
+      .from('gastos')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating gasto:', error.message);
+      throw error;
+    }
+    return data as Gasto;
   },
 };

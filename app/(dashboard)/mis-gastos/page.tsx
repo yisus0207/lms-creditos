@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 import Card from '@/components/ui/Card';
 import UIModal from '@/components/ui/UIModal';
+import SearchableSelect from '@/components/ui/SearchableSelect';
+import MonthPicker from '@/components/ui/MonthPicker';
+import DeleteConfirmModal from '@/components/shared/DeleteConfirmModal';
 import { formatCurrency } from '@/lib/utils';
 import { GASTO_CATEGORIAS } from '@/constants';
 import { GastoService } from '@/services/gasto.service';
@@ -21,7 +24,7 @@ import {
   Legend,
   LabelList,
 } from 'recharts';
-import { Receipt, Plus, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { Receipt, Plus, Trash2, TrendingDown, TrendingUp, Pencil } from 'lucide-react';
 
 const MONTHS_SHORT = [
   'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
@@ -39,30 +42,23 @@ function defaultMesAnio(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-function mesAnioOptions(): { value: string; label: string }[] {
-  const out: { value: string; label: string }[] = [];
-  const d = new Date();
-  d.setFullYear(d.getFullYear() - 4);
-  d.setDate(1);
-  const end = new Date();
-  end.setFullYear(end.getFullYear() + 1);
-  end.setMonth(11, 1);
-  while (d <= end) {
-    const y = d.getFullYear();
-    const m = d.getMonth();
+function mesAnioOptions(): { id: string; label: string }[] {
+  const out: { id: string; label: string }[] = [];
+  const currentYear = new Date().getFullYear();
+  
+  for (let m = 0; m < 12; m++) {
     out.push({
-      value: `${y}-${String(m + 1).padStart(2, '0')}`,
-      label: `${MONTHS_EN_SHORT[m]}-${y}`,
+      id: `${currentYear}-${String(m + 1).padStart(2, '0')}`,
+      label: `${MONTHS_SHORT[m]}-${currentYear}`,
     });
-    d.setMonth(d.getMonth() + 1);
   }
-  return out.reverse();
+  return out.reverse(); // Newest first
 }
 
 /** Muestra Feb-2025 a partir de una fecha guardada como primer día del mes */
 function formatGastoMesAnioLabel(isoDate: string) {
   const d = new Date(isoDate);
-  return `${MONTHS_EN_SHORT[d.getMonth()]}-${d.getFullYear()}`;
+  return `${MONTHS_SHORT[d.getUTCMonth()]}-${d.getUTCFullYear()}`;
 }
 
 function formatCompactCOP(value: number) {
@@ -110,16 +106,16 @@ function buildMergedChart(
 
   ingresos.forEach((i) => {
     const d = new Date(i.fecha);
-    if (d.getFullYear() !== year) return;
+    if (d.getUTCFullYear() !== year) return;
     if (i.estado === 'pagado') {
-      buckets[d.getMonth()].ingresos += i.monto;
+      buckets[d.getUTCMonth()].ingresos += i.monto;
     }
   });
 
   gastosList.forEach((g) => {
     const d = new Date(g.fecha);
-    if (d.getFullYear() !== year) return;
-    buckets[d.getMonth()].gastos += g.monto;
+    if (d.getUTCFullYear() !== year) return;
+    buckets[d.getUTCMonth()].gastos += g.monto;
   });
 
   return buckets;
@@ -134,6 +130,11 @@ export default function MisGastosPage() {
   >([]);
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedGastoId, setSelectedGastoId] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
   const [categoria, setCategoria] = useState<string>(GASTO_CATEGORIAS[0]);
   const [otroDetalle, setOtroDetalle] = useState('');
   const [monto, setMonto] = useState('');
@@ -143,6 +144,10 @@ export default function MisGastosPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const opcionesMesAnio = useMemo(() => mesAnioOptions(), []);
+  const opcionesCategorias = useMemo(() => [
+    ...GASTO_CATEGORIAS.map(c => ({ id: c, label: c })),
+    { id: 'otro', label: 'Otro' }
+  ], []);
 
   const currentYear = new Date().getFullYear();
 
@@ -204,15 +209,25 @@ export default function MisGastosPage() {
 
     setSaving(true);
     try {
-      await GastoService.create({
-        categoria: categoriaFinal,
-        monto: m,
-        fecha: fechaPrimerDia,
-      });
+      if (isEditing && selectedGastoId) {
+        await GastoService.update(selectedGastoId, {
+          categoria: categoriaFinal,
+          monto: m,
+          fecha: fechaPrimerDia,
+        });
+      } else {
+        await GastoService.create({
+          categoria: categoriaFinal,
+          monto: m,
+          fecha: fechaPrimerDia,
+        });
+      }
       setMonto('');
       setOtroDetalle('');
       setMesAnio(defaultMesAnio());
       setModalOpen(false);
+      setIsEditing(false);
+      setSelectedGastoId(null);
       await loadAll();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al guardar';
@@ -224,19 +239,64 @@ export default function MisGastosPage() {
 
   const openModal = () => {
     setErrorMsg(null);
+    setIsEditing(false);
+    setSelectedGastoId(null);
+    setCategoria(GASTO_CATEGORIAS[0]);
+    setMonto('');
+    setOtroDetalle('');
     setMesAnio(defaultMesAnio());
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
+    setIsEditing(false);
+    setSelectedGastoId(null);
     setErrorMsg(null);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este gasto?')) return;
-    await GastoService.delete(id);
-    await loadAll();
+  const handleEditClick = (g: Gasto) => {
+    setErrorMsg(null);
+    setIsEditing(true);
+    setSelectedGastoId(g.id);
+    
+    // Check if it's "Otro" category
+    let cat = g.categoria;
+    let det = '';
+    if (cat.startsWith('Otro: ')) {
+      det = cat.replace('Otro: ', '');
+      cat = 'otro';
+    }
+    
+    setCategoria(cat);
+    setOtroDetalle(det);
+    setMonto(g.monto.toString());
+    
+    // YYYY-MM-DD -> YYYY-MM
+    const datePart = g.fecha.split('T')[0].substring(0, 7);
+    setMesAnio(datePart);
+    
+    setModalOpen(true);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setSelectedGastoId(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedGastoId) return;
+    setIsDeleting(true);
+    try {
+      await GastoService.delete(selectedGastoId);
+      setDeleteModalOpen(false);
+      setSelectedGastoId(null);
+      await loadAll();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (!mounted) return null;
@@ -316,8 +376,8 @@ export default function MisGastosPage() {
         <UIModal
           isOpen={modalOpen}
           onClose={closeModal}
-          title="Nuevo gasto"
-          maxWidth="max-w-md"
+          title={isEditing ? "Editar gasto" : "Nuevo gasto"}
+          maxWidth="max-w-lg"
         >
           <form onSubmit={handleSubmit} className="space-y-5">
             <p className="text-xs text-gray-500 -mt-2 mb-2 leading-relaxed">
@@ -325,23 +385,12 @@ export default function MisGastosPage() {
               (ej. <span className="font-mono text-[11px]">2025-02-01</span> para Feb-2025).
             </p>
             <div className="space-y-5">
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
-                  Categoría
-                </label>
-                <select
-                  value={categoria}
-                  onChange={(e) => setCategoria(e.target.value)}
-                  className="w-full rounded-[22px] border-0 bg-gray-50/90 px-5 py-3.5 text-sm font-bold text-[#0F0A4D] shadow-inner ring-1 ring-gray-200/80 focus:ring-2 focus:ring-[#D4A017]/40 focus:outline-none transition-shadow"
-                >
-                  {GASTO_CATEGORIAS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                  <option value="otro">Otro</option>
-                </select>
-              </div>
+              <SearchableSelect
+                label="Categoría"
+                options={opcionesCategorias}
+                value={categoria}
+                onChange={setCategoria}
+              />
               {categoria === 'otro' && (
                 <div>
                   <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
@@ -369,22 +418,12 @@ export default function MisGastosPage() {
                   className="w-full rounded-[22px] border-0 bg-gray-50/90 px-5 py-3.5 text-sm font-bold text-[#0F0A4D] shadow-inner ring-1 ring-gray-200/80 focus:ring-2 focus:ring-[#D4A017]/40 focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-1">
-                  Mes y año
-                </label>
-                <select
-                  value={mesAnio}
-                  onChange={(e) => setMesAnio(e.target.value)}
-                  className="w-full rounded-[22px] border-0 bg-gray-50/90 px-5 py-3.5 text-sm font-bold text-[#0F0A4D] shadow-inner ring-1 ring-gray-200/80 focus:ring-2 focus:ring-[#D4A017]/40 focus:outline-none"
-                >
-                  {opcionesMesAnio.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <MonthPicker
+                label="Mes y año"
+                options={opcionesMesAnio}
+                value={mesAnio}
+                onChange={setMesAnio}
+              />
             </div>
             {errorMsg && (
               <p className="text-sm font-bold text-rose-600 bg-rose-50/90 rounded-[20px] px-4 py-3 ring-1 ring-rose-100">
@@ -509,20 +548,39 @@ export default function MisGastosPage() {
                   <span className="font-black text-rose-600">
                     {formatCurrency(g.monto)}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(g.id)}
-                    className="p-2 rounded-xl text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
-                    aria-label="Eliminar"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleEditClick(g)}
+                      className="p-2 rounded-xl text-gray-300 hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                      aria-label="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteClick(g.id)}
+                      className="p-2 rounded-xl text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </Card>
+
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        isLoading={isDeleting}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="¿Eliminar este gasto?"
+        description="Esta acción no se puede deshacer y el gasto desaparecerá de tus reportes mensuales."
+      />
     </motion.div>
   );
 }

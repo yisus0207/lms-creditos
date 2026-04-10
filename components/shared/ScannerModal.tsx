@@ -12,7 +12,9 @@ import {
   ChevronRight,
   ChevronLeft,
   Sparkles,
-  UploadCloud
+  UploadCloud,
+  File as FileIcon,
+  Image as ImageIcon
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { supabase } from '@/lib/supabase';
@@ -44,7 +46,7 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
   const [selectedClientId, setSelectedClientId] = useState('');
   const [docType, setDocType] = useState(DOCUMENT_TYPES[0]);
   const [customDocType, setCustomDocType] = useState('');
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<{ data: string; type: string; name: string ; blob: Blob }[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -72,7 +74,12 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
     Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImages(prev => [...prev, reader.result as string]);
+        setImages(prev => [...prev, {
+          data: reader.result as string,
+          type: file.type,
+          name: file.name,
+          blob: file
+        }]);
       };
       reader.readAsDataURL(file);
     });
@@ -87,50 +94,67 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
 
     setIsSaving(true);
     try {
-      // 1. Create PDF
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      let finalBlob: Blob;
+      let extension = 'pdf';
 
-      for (let i = 0; i < images.length; i++) {
-        if (i > 0) pdf.addPage();
-        
-        // Cargar imagen para obtener dimensiones reales y evitar estiramiento
-        const imgProps = await new Promise<{w: number, h: number}>((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve({ w: img.width, h: img.height });
-          img.src = images[i];
-        });
+      // Check if we have a direct document (PDF, Word)
+      const firstFile = images[0];
+      const isDirectDoc = firstFile.type === 'application/pdf' || 
+                         firstFile.type.includes('word') || 
+                         firstFile.type.includes('officedocument');
 
-        const imgRatio = imgProps.w / imgProps.h;
-        const maxW = pageWidth - 20;
-        const maxH = pageHeight - 20;
-        
-        let finalW = maxW;
-        let finalH = maxW / imgRatio;
+      if (isDirectDoc && images.length === 1) {
+        // Direct upload without jsPDF
+        finalBlob = firstFile.blob;
+        extension = firstFile.name.split('.').pop() || (firstFile.type === 'application/pdf' ? 'pdf' : 'docx');
+      } else {
+        // 1. Create PDF from images
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
 
-        if (finalH > maxH) {
-          finalH = maxH;
-          finalW = maxH * imgRatio;
+        for (let i = 0; i < images.length; i++) {
+          if (i > 0) pdf.addPage();
+          
+          // Only process images
+          if (!images[i].type.startsWith('image/')) continue;
+
+          const imgProps = await new Promise<{w: number, h: number}>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve({ w: img.width, h: img.height });
+            img.onerror = () => reject(new Error(`No se pudo cargar la imagen ${i + 1}`));
+            img.src = images[i].data;
+          });
+
+          const imgRatio = imgProps.w / imgProps.h;
+          const maxW = pageWidth - 20;
+          const maxH = pageHeight - 20;
+          
+          let finalW = maxW;
+          let finalH = maxW / imgRatio;
+
+          if (finalH > maxH) {
+            finalH = maxH;
+            finalW = maxH * imgRatio;
+          }
+
+          const x = (pageWidth - finalW) / 2;
+          const y = (pageHeight - finalH) / 2;
+
+          pdf.addImage(images[i].data, 'JPEG', x, y, finalW, finalH);
         }
-
-        // Centrado en la página
-        const x = (pageWidth - finalW) / 2;
-        const y = (pageHeight - finalH) / 2;
-
-        pdf.addImage(images[i], 'JPEG', x, y, finalW, finalH);
+        finalBlob = pdf.output('blob');
       }
 
-      const pdfBlob = pdf.output('blob');
       const finalDocType = docType === 'Otros' && customDocType.trim() ? customDocType.trim() : docType;
       const safeTypeName = finalDocType.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
-      const fileName = `${safeTypeName}_${Date.now()}.pdf`;
+      const fileName = `${safeTypeName}_${Date.now()}.${extension}`;
       const filePath = `${selectedClientId}/${fileName}`;
 
       // 2. Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documentos')
-        .upload(filePath, pdfBlob);
+        .upload(filePath, finalBlob);
 
       if (uploadError) {
         // Fallback or more specific error for admin
@@ -307,7 +331,7 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
                 </div>
                 <input 
                   type="file" 
-                  accept="image/*" 
+                  accept="image/*,application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
                   capture="environment" 
                   multiple 
                   className="hidden"
@@ -335,8 +359,21 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
                   </div>
                   <div className="grid grid-cols-3 gap-4 pb-4">
                     {images.map((img, idx) => (
-                      <div key={idx} className="relative group aspect-[3/4] rounded-2xl overflow-hidden border-2 border-gray-100 shadow-md transform hover:-rotate-1 transition-all">
-                        <img src={img} className="w-full h-full object-cover" alt={`Página ID ${idx + 1}`} />
+                      <div key={idx} className="relative group aspect-[3/4] rounded-2xl overflow-hidden border-2 border-gray-100 shadow-md transform hover:-rotate-1 transition-all bg-gray-50 flex items-center justify-center">
+                        {img.type.startsWith('image/') ? (
+                          <img src={img.data} className="w-full h-full object-cover" alt={`Página ID ${idx + 1}`} />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                            {img.type.includes('pdf') ? (
+                              <FileText className="w-12 h-12 text-rose-500" />
+                            ) : (
+                              <FileIcon className="w-12 h-12 text-blue-500" />
+                            )}
+                            <span className="text-[8px] font-black text-[#0F0A4D] px-2 text-center truncate w-full">
+                              {img.name}
+                            </span>
+                          </div>
+                        )}
                         <div className="absolute top-2 left-2 w-6 h-6 bg-[#0F0A4D] text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-lg">
                           {idx + 1}
                         </div>
