@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal';
 import UIModal from '@/components/ui/UIModal';
 import type { Cliente } from '@/types';
 import { cn } from '@/lib/utils';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 import { Plus, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ClientesPage() {
@@ -26,6 +27,10 @@ export default function ClientesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
+
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importTargetId, setImportTargetId] = useState('');
+  const [importing, setImporting] = useState(false);
 
   const loadClientes = useCallback(async () => {
     setLoading(true);
@@ -84,13 +89,25 @@ export default function ClientesPage() {
         title="Gestión de Clientes"
         description="Administra la base de datos de prospectos y clientes activos."
         actions={
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A017] hover:bg-[#B8860B] text-[#0F0A4D] rounded-2xl font-black shadow-lg shadow-amber-900/10 transition-all active:scale-95 whitespace-nowrap"
-          >
-            <Plus className="w-5 h-5" />
-            Nuevo Cliente Banco
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setImportTargetId('');
+                setShowImportModal(true);
+              }}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-50 hover:bg-gray-100 text-[#0F0A4D] border border-gray-100 rounded-2xl font-black transition-all active:scale-95 whitespace-nowrap hidden sm:flex"
+            >
+              <Users className="w-5 h-5" />
+              Vincular Cliente Existente
+            </button>
+            <button
+              onClick={() => setShowForm(true)}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A017] hover:bg-[#B8860B] text-[#0F0A4D] rounded-2xl font-black shadow-lg shadow-amber-900/10 transition-all active:scale-95 whitespace-nowrap"
+            >
+              <Plus className="w-5 h-5" />
+              Nuevo Cliente Banco
+            </button>
+          </div>
         }
       />
 
@@ -200,6 +217,56 @@ export default function ClientesPage() {
       >
         {errorModal.message}
       </Modal>
+
+      {/* Modal Importar Cliente */}
+      <UIModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Vincular Cliente de Subsidio"
+      >
+        <div className="p-2 space-y-6">
+          <p className="text-sm text-gray-500 font-medium">
+            Selecciona un cliente que actualmente está registrado solo para subsidios. Al vincularlo, también aparecerá aquí para gestionar su crédito en el banco, sin duplicar su cédula.
+          </p>
+          <SearchableSelect
+            label="Cliente de Subsidio"
+            placeholder="Buscar por nombre o cédula..."
+            value={importTargetId}
+            onChange={setImportTargetId}
+            options={clientes
+              .filter(c => c.tipo_tramite === 'subsidio')
+              .map(c => ({
+                id: c.id,
+                label: c.nombre,
+                sublabel: c.numero_documento
+              }))}
+          />
+          <div className="flex gap-4 pt-4">
+            <button
+              onClick={() => setShowImportModal(false)}
+              className="flex-1 h-14 rounded-[24px] bg-gray-100 text-gray-500 font-black hover:bg-gray-200 transition-all active:scale-95"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={async () => {
+                if (!importTargetId) return;
+                setImporting(true);
+                await ClienteService.update(importTargetId, { tipo_tramite: 'banco' });
+                setImporting(false);
+                setShowImportModal(false);
+                loadClientes();
+              }}
+              disabled={!importTargetId || importing}
+              className="flex-1 h-14 rounded-[24px] bg-gradient-to-r from-[#D4A017] to-amber-400 text-white font-black hover:from-[#B8860B] hover:to-[#D4A017] shadow-xl shadow-amber-100 disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center"
+            >
+              {importing ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin rounded-full" />
+              ) : 'Confirmar Vinculación'}
+            </button>
+          </div>
+        </div>
+      </UIModal>
     </div>
   );
 }
