@@ -111,3 +111,14 @@ export interface AbonoSubsidio {
   created_at: string;
 }
 
+// ------------------------------------------------------------
+// Gasto personal (Mis gastos)
+// ------------------------------------------------------------
+export interface Gasto {
+  id: string;
+  categoria: string;
+  monto: number;
+  fecha: string;
+  created_at: string;
+}
+

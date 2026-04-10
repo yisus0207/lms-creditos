@@ -35,8 +35,29 @@ export const NAV_LINKS_DASHBOARD = [
   { href: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
   { href: '/clientes', label: 'Clientes', icon: 'Users' },
   { href: '/ingresos', label: 'Ingresos', icon: 'DollarSign' },
+  { href: '/mis-gastos', label: 'Mis gastos', icon: 'Receipt' },
   { href: '/operaciones', label: 'Subsidios', icon: 'Briefcase' },
   { href: '/bancos', label: 'Bancos', icon: 'Landmark' },
+] as const;
+
+/** Categorías homologadas para gastos (Mis gastos) */
+export const GASTO_CATEGORIAS = [
+  'Luz',
+  'Agua',
+  'Gas',
+  'Seguro carro',
+  'Administración Tulipán',
+  'Cuota caja social Tulipán',
+  'Cuota caja social mejora Tulipán',
+  'Carnes',
+  'Verdura',
+  'Aseo',
+  'Mercado',
+  'Merienda',
+  'Administración Manzana 4',
+  'Cuota caja social Manzana 4',
+  'Cuota caja social mejora Manzana 4',
+  'Plan',
 ] as const;
 
 export const PORTAL_BASE = '/portal';

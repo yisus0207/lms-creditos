@@ -18,13 +18,69 @@ import {
   Gem
 } from 'lucide-react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  LabelList
 } from 'recharts';
 
 const MONTHS_FULL = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
+
+function formatCompactCOP(value: number) {
+  if (!Number.isFinite(value)) return '$0';
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(1)}B`;
+  if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `$${Math.round(value / 1_000)}k`;
+  return `$${Math.round(value)}`;
+}
+
+function RecaudoValueLabel(props: any) {
+  const { x, y, value } = props;
+  if (value == null) return null;
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={-12}
+      textAnchor="middle"
+      fill="#0F0A4D"
+      fontSize={10}
+      fontWeight={900}
+      style={{ pointerEvents: 'none' }}
+    >
+      {formatCurrency(Number(value))}
+    </text>
+  );
+}
+
+function RecaudoBarLabel(props: any) {
+  const { x, y, width, height, value } = props;
+  if (value == null) return null;
+  const labelX = (x ?? 0) + (width ?? 0) + 10;
+  const labelY = (y ?? 0) + (height ?? 0) / 2 + 4;
+
+  return (
+    <text
+      x={labelX}
+      y={labelY}
+      textAnchor="start"
+      fill="#0F0A4D"
+      fontSize={10}
+      fontWeight={900}
+      style={{ pointerEvents: 'none' }}
+    >
+      {formatCurrency(Number(value))}
+    </text>
+  );
+}
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -84,24 +140,22 @@ export default function DashboardPage() {
           }
         });
 
-        const monthlyMap: Record<number, number> = {};
-        for (let i = 5; i >= 0; i--) {
-          const d = new Date();
-          d.setMonth(d.getMonth() - i);
-          monthlyMap[d.getMonth()] = 0;
-        }
+        // Full current-year buckets (Jan..Dec) so future months (e.g., May) show up immediately.
+        const currentYear = now.getFullYear();
+        const yearBuckets = Array.from({ length: 12 }, (_, month) => ({
+          name: MONTHS_FULL[month].substring(0, 3),
+          recaudo: 0,
+          month,
+        }));
 
         ingresos.forEach(i => {
           const d = new Date(i.fecha);
-          if (monthlyMap[d.getMonth()] !== undefined) {
-            monthlyMap[d.getMonth()] += i.monto;
-          }
+          if (d.getFullYear() !== currentYear) return;
+          const m = d.getMonth();
+          if (yearBuckets[m]) yearBuckets[m].recaudo += i.monto;
         });
 
-        const trendData = Object.entries(monthlyMap).map(([month, amount]) => ({
-          name: MONTHS_FULL[parseInt(month)].substring(0, 3),
-          recaudo: amount,
-        }));
+        const trendData = yearBuckets.map(({ name, recaudo }) => ({ name, recaudo }));
         
         setMonthlyTrendData(trendData);
 
@@ -209,7 +263,7 @@ export default function DashboardPage() {
                   <TrendingUp className="w-5 h-5 text-[#D4A017]" />
                   Tendencia de Recaudos
                 </h3>
-                <p className="text-xs font-semibold text-gray-400 mt-1 uppercase tracking-wider">Historial mensual (6 meses)</p>
+                <p className="text-xs font-semibold text-gray-400 mt-1 uppercase tracking-wider">Historial mensual (12 meses)</p>
               </div>
               <div className="flex gap-2">
                 <div className="h-2 w-2 rounded-full bg-[#D4A017] animate-pulse" />
@@ -219,32 +273,31 @@ export default function DashboardPage() {
             
             <div className="h-[350px] w-full pr-4">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlyTrendData}>
-                  <defs>
-                    <linearGradient id="colorRecaudo" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#D4A017" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#D4A017" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" strokeOpacity={0.5} />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#64748B', fontSize: 11, fontWeight: 900 }} 
-                    dy={10}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
+                <BarChart
+                  data={monthlyTrendData}
+                  layout="vertical"
+                  margin={{ top: 8, right: 110, left: 12, bottom: 8 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" strokeOpacity={0.5} />
+                  <XAxis
+                    type="number"
+                    axisLine={false}
+                    tickLine={false}
                     tick={{ fill: '#64748B', fontSize: 10, fontWeight: 700 }}
-                    tickFormatter={(value) => `$${value/1000}k`}
-                    width={40}
+                    tickFormatter={(value) => formatCompactCOP(Number(value))}
                   />
-                  <RechartsTooltip 
-                    contentStyle={{ 
-                      borderRadius: '20px', 
-                      border: '1px solid rgba(255,255,255,0.2)', 
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748B', fontSize: 11, fontWeight: 900 }}
+                    width={44}
+                  />
+                  <RechartsTooltip
+                    contentStyle={{
+                      borderRadius: '20px',
+                      border: '1px solid rgba(255,255,255,0.2)',
                       boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.15)',
                       backgroundColor: 'rgba(255,255,255,0.8)',
                       backdropFilter: 'blur(10px)',
@@ -252,18 +305,20 @@ export default function DashboardPage() {
                     }}
                     itemStyle={{ color: '#0F0A4D', fontWeight: 900, fontSize: '12px' }}
                     labelStyle={{ color: '#D4A017', fontWeight: 900, marginBottom: '4px', textTransform: 'uppercase', fontSize: '10px' }}
-                    formatter={(value: any) => [formatCurrency(value), 'Recaudado']}
+                    formatter={(value: any) => [formatCurrency(Number(value)), 'Recaudado']}
+                    cursor={{ fill: 'rgba(212,160,23,0.06)' }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="recaudo" 
-                    stroke="#D4A017" 
-                    strokeWidth={4}
-                    fillOpacity={1} 
-                    fill="url(#colorRecaudo)" 
-                    animationDuration={2000}
-                  />
-                </AreaChart>
+
+                  <Bar
+                    dataKey="recaudo"
+                    fill="#D4A017"
+                    radius={[14, 14, 14, 14]}
+                    maxBarSize={38}
+                    animationDuration={900}
+                  >
+                    <LabelList dataKey="recaudo" content={RecaudoBarLabel} />
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </Card>

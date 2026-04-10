@@ -13,7 +13,9 @@ import {
   Briefcase,
   ChevronRight,
   ShieldCheck,
-  LogOut
+  LogOut,
+  Receipt,
+  Landmark
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -23,6 +25,8 @@ const ICON_MAP: Record<string, any> = {
   DollarSign,
   FileText,
   Briefcase,
+  Receipt,
+  Landmark,
 };
 
 export default function Sidebar() {
