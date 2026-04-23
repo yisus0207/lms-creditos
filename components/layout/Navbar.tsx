@@ -168,7 +168,7 @@ export default function Navbar() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed inset-y-0 right-0 z-40 w-[80%] max-w-sm bg-[#0F0A4D] border-l border-white/10 shadow-2xl md:hidden pt-24 px-6 flex flex-col"
+            className="fixed inset-y-0 right-0 z-40 w-[80%] max-w-sm bg-[#0F0A4D] border-l border-white/10 shadow-2xl md:hidden pt-24 px-6 flex flex-col overflow-y-auto pb-8"
           >
             <div className="flex flex-col gap-6 mb-12">
               {navLinks.map((link) => (
