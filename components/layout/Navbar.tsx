@@ -33,13 +33,13 @@ const drawerVariants = {
 
 const navStyleVariants = {
   top: {
-    backgroundColor: 'rgba(15, 10, 77, 0)', // Totalmente transparente
+    backgroundColor: 'rgba(15, 10, 77, 1)', // Fondo sólido inicial (Navy) para legibilidad máxima
     boxShadow: 'none',
     backdropFilter: 'blur(0px)'
   },
   scrolled: {
-    backgroundColor: 'rgba(15, 10, 77, 0.6)', // Azul del sistema al 60%
-    boxShadow: '0 4px 20px rgba(15, 10, 77, 0.3)', // Sombra sutil color sistema
+    backgroundColor: 'rgba(15, 10, 77, 0.85)', // Glassmorphism refinado al desplazar
+    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.4)',
     backdropFilter: 'blur(12px)'
   }
 } as const;
@@ -51,7 +51,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener('scroll', handleScroll);
