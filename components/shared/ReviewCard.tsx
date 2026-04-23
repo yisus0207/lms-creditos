@@ -16,7 +16,7 @@ const cardVariants = {
     scale: 1,
     transition: { type: 'spring', stiffness: 120, damping: 20 }
   }
-};
+} as const;
 
 export default function ReviewCard({ review }: { review: Review }) {
   return (

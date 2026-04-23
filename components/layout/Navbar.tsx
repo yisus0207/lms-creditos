@@ -29,20 +29,20 @@ const drawerVariants = {
     x: '100%',
     transition: { ease: 'easeInOut' }
   }
-};
+} as const;
 
 const navStyleVariants = {
   top: {
-    backgroundColor: 'rgba(15, 10, 77, 1)', // Navy sólido
+    backgroundColor: 'rgba(15, 10, 77, 0)', // Totalmente transparente
     boxShadow: 'none',
     backdropFilter: 'blur(0px)'
   },
   scrolled: {
-    backgroundColor: 'rgba(15, 10, 77, 0.95)', // Navy con ligera opacidad
-    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+    backgroundColor: 'rgba(15, 10, 77, 0.6)', // Azul del sistema al 60%
+    boxShadow: '0 4px 20px rgba(15, 10, 77, 0.3)', // Sombra sutil color sistema
     backdropFilter: 'blur(12px)'
   }
-};
+} as const;
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);

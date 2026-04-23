@@ -16,19 +16,19 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.15,
-      delayChildren: 0.4,
+      delayChildren: 0.3,
     },
   },
-};
+} as const;
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
     y: 0,
-    transition: { type: 'spring', stiffness: 100, damping: 20 }
+    transition: { duration: 0.6 }
   },
-};
+} as const;
 
 export default function HeroSection() {
   return (

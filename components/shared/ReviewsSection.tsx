@@ -19,7 +19,7 @@ const containerVariants = {
       delayChildren: 0.2
     }
   }
-};
+} as const;
 
 export default function ReviewsSection() {
   return (
