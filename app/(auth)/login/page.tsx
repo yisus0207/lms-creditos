@@ -31,13 +31,14 @@ export default function LoginPage() {
           .from('clientes')
           .select('id')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to avoid error if deleted
         
         if (client) {
           router.push('/portal');
         } else {
-          // If not a client, treat as Admin/Staff fallback
-          router.push('/dashboard'); 
+          // Force logout if account was deleted from DB but session persists
+          await supabase.auth.signOut();
+          router.refresh();
         }
       }
     };
@@ -97,8 +98,9 @@ export default function LoginPage() {
           if (client) {
             router.push('/portal');
           } else {
-            // Default to dashboard for non-client registered users
-            router.push('/dashboard');
+            // SECURITY FIX: If not in clients table and NOT an admin, reject access immediately
+            await supabase.auth.signOut();
+            throw new Error('Tu cuenta no se encuentra activa o ha sido eliminada. Contacta al administrador.');
           }
         }
         router.refresh();

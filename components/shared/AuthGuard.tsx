@@ -16,20 +16,49 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       
       if (!session) {
         router.push('/login');
-      } else {
-        setAuthenticated(true);
+        return;
       }
+
+      // SECURITY CHECK: Verify if the user has access to the admin area
+      const user = session.user;
+      const isAdmin = user.email?.endsWith('@lmscreditos.com');
+
+      if (!isAdmin) {
+        // If it's a client attempting to access /dashboard, send them to portal
+        const { data: client } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (client) {
+          router.push('/portal');
+        } else {
+          // Zombie user (Auth exists but no record in DB): Kick out
+          await supabase.auth.signOut();
+          router.push('/login');
+        }
+        return;
+      }
+      
+      setAuthenticated(true);
       setLoading(false);
     };
 
     checkAuth();
 
     // Listen for changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!session) {
         router.push('/login');
       } else {
-        setAuthenticated(true);
+        const isAdmin = session.user.email?.endsWith('@lmscreditos.com');
+        if (!isAdmin) {
+          // If a client or unauthorized user is detected, they shouldn't be here
+          router.push('/portal');
+        } else {
+          setAuthenticated(true);
+        }
       }
     });
 
