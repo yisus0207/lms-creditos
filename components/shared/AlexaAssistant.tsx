@@ -55,7 +55,7 @@ export default function AlexaAssistant() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-4 pointer-events-none">
+    <div className="fixed bottom-28 lg:bottom-6 right-4 lg:right-6 z-[9999] flex flex-col items-end gap-4 pointer-events-none">
       <AnimatePresence>
         {isOpen && (
           <motion.div
