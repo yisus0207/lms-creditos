@@ -136,7 +136,8 @@ export const ClienteService = {
       .from('clientes')
       .insert([{
         ...clienteData,
-        tipo_tramite: clienteData.tipo_tramite || 'banco'
+        tipo_tramite: clienteData.tipo_tramite || 'banco',
+        rol: 'cliente'
       }])
       .select()
       .single();

@@ -21,7 +21,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
       // SECURITY CHECK: Verify if the user has access to the admin area
       const user = session.user;
-      const isAdmin = user.email?.endsWith('@lmscreditos.com');
+      const isAdmin = user.user_metadata?.rol === 'admin';
 
       if (!isAdmin) {
         // If it's a client attempting to access /dashboard, send them to portal
@@ -52,7 +52,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       if (!session) {
         router.push('/login');
       } else {
-        const isAdmin = session.user.email?.endsWith('@lmscreditos.com');
+        const isAdmin = session.user.user_metadata?.rol === 'admin';
         if (!isAdmin) {
           // If a client or unauthorized user is detected, they shouldn't be here
           router.push('/portal');

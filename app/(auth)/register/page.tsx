@@ -65,6 +65,7 @@ export default function RegisterPage() {
             tipo_documento: 'CC',
             email: formData.email,
             telefono: formData.telefono,
+            rol: 'cliente',
             created_at: new Date().toISOString()
           }]);
 

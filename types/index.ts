@@ -45,6 +45,7 @@ export interface Cliente {
   total_generado?: number;
   total_deuda?: number;
   tipo_tramite?: 'banco' | 'subsidio'; // Classification for logic & views
+  rol?: string;                         // admin | cliente
   created_at: string;
 }
 

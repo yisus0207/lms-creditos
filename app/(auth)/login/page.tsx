@@ -21,7 +21,7 @@ export default function LoginPage() {
       if (!session) return;
 
       const user = session.user;
-      const isAdmin = user.email?.endsWith('@lmscreditos.com');
+      const isAdmin = user.user_metadata?.rol === 'admin';
 
       if (isAdmin) {
         router.push('/dashboard');
@@ -31,7 +31,7 @@ export default function LoginPage() {
           .from('clientes')
           .select('id')
           .eq('user_id', user.id)
-          .maybeSingle(); // Use maybeSingle to avoid error if deleted
+          .maybeSingle(); 
         
         if (client) {
           router.push('/portal');
@@ -83,7 +83,7 @@ export default function LoginPage() {
       }
 
       if (data.session) {
-        const isAdmin = loginEmail.endsWith('@lmscreditos.com');
+        const isAdmin = data.session.user.user_metadata?.rol === 'admin';
         
         if (isAdmin) {
           router.push('/dashboard');
@@ -93,12 +93,11 @@ export default function LoginPage() {
             .from('clientes')
             .select('id')
             .eq('user_id', data.session.user.id)
-            .single();
+            .maybeSingle();
           
           if (client) {
             router.push('/portal');
           } else {
-            // SECURITY FIX: If not in clients table and NOT an admin, reject access immediately
             await supabase.auth.signOut();
             throw new Error('Tu cuenta no se encuentra activa o ha sido eliminada. Contacta al administrador.');
           }
