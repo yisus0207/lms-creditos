@@ -107,25 +107,36 @@ function PortalContent() {
     return (
       <main className="min-h-screen bg-[#FDFDFD] p-6 lg:p-12 flex items-center justify-center">
         <div className="max-w-md w-full text-center space-y-8 animate-reveal-up">
-          <div className="w-20 h-20 bg-red-50 rounded-[32px] flex items-center justify-center mx-auto shadow-lg shadow-red-100/50">
-            <AlertCircle className="w-10 h-10 text-red-500" />
+          <div className="w-20 h-20 bg-amber-50 rounded-[32px] flex items-center justify-center mx-auto shadow-lg shadow-amber-100/50">
+            <ShieldCheck className="w-10 h-10 text-[#D4A017]" />
           </div>
           <div className="space-y-3">
-            <h1 className="text-3xl font-black text-[#0F0A4D] uppercase tracking-tighter">Acceso Restringido</h1>
-            <p className="text-gray-400 font-medium leading-relaxed">
-              No se ha encontrado un perfil de cliente asociado a tu cuenta.
+            <h1 className="text-3xl font-black text-[#0F0A4D] uppercase tracking-tighter">Sesión del Portal</h1>
+            <p className="text-gray-400 font-medium leading-relaxed px-4">
+              Si eres Administrador, recuerda usar el panel de gestión. Los clientes deben usar su cuenta vinculada.
               <br /><br />
-              <span className="block text-[10px] text-red-400 bg-red-50/50 px-4 py-3 rounded-2xl font-black uppercase tracking-widest border border-red-100">
-                TIP: Verifica si has activado RLS en Supabase y añadido la política de acceso para 'clientes'.
+              <span className="block text-[10px] text-amber-600 bg-amber-50/50 px-4 py-4 rounded-2xl font-black uppercase tracking-widest border border-amber-100">
+                INFO: Si estás probando, usa ventanas de Incógnito diferentes para Admin y Cliente para evitar conflictos de sesión.
               </span>
             </p>
           </div>
-          <button
-            onClick={() => window.location.href = '/login'}
-            className="text-[10px] font-black text-[#D4A017] uppercase tracking-[0.3em] hover:text-[#0F0A4D] transition-colors"
-          >
-            Volver al Inicio de Sesión
-          </button>
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={() => window.location.href = '/dashboard'}
+              className="w-full h-14 bg-[#0F0A4D] text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-900/20 hover:bg-[#1a2b56] transition-all"
+            >
+              Ir al Panel de Administración
+            </button>
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/login';
+              }}
+              className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] hover:text-[#D4A017] transition-colors"
+            >
+              Cerrar Sesión e Iniciar como Cliente
+            </button>
+          </div>
         </div>
       </main>
     );
@@ -200,6 +211,7 @@ function PortalContent() {
           <ClientFinancialSummary
             montoTotal={cliente.monto_total_credito || 0}
             totalPagado={cliente.total_generado || 0}
+            totalDeuda={cliente.total_deuda || 0}
           />
         </section>
 
@@ -318,14 +330,27 @@ function PortalContent() {
                 <div className="space-y-6">
                   {ingresos.map((pago, idx) => (
                     <div key={pago.id}
-                      className="flex items-start justify-between animate-reveal-up"
+                      className="flex items-start justify-between animate-reveal-up group"
                       style={{ animationDelay: `${0.6 + (idx * 0.1)}s` }}
                     >
-                      <div className="flex gap-4 group">
-                        <div className="mt-1 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50 group-hover:scale-150 transition-transform" />
+                      <div className="flex gap-4">
+                        <div className={`mt-1.5 w-2 h-2 rounded-full ring-4 transition-all group-hover:scale-150 ${
+                          pago.estado === 'pagado' 
+                            ? 'bg-emerald-500 ring-emerald-50' 
+                            : 'bg-amber-400 ring-amber-50 animate-pulse'
+                        }`} />
                         <div>
-                          <p className="text-sm font-black text-[#0F0A4D] tracking-tight group-hover:text-emerald-600 transition-colors">{formatCurrency(pago.monto)}</p>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">{pago.tipo || 'Pago'}</p>
+                          <p className={`text-sm font-black tracking-tight transition-colors ${
+                             pago.estado === 'pagado' ? 'text-[#0F0A4D] group-hover:text-emerald-600' : 'text-amber-700'
+                          }`}>
+                            {formatCurrency(pago.monto)}
+                          </p>
+                          <div className="flex items-center gap-2">
+                             <p className="text-[9px] font-bold text-gray-400 uppercase">{pago.tipo || 'Pago'}</p>
+                             {pago.estado !== 'pagado' && (
+                               <span className="text-[7px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Pendiente</span>
+                             )}
+                          </div>
                         </div>
                       </div>
                       <p className="text-[9px] font-black text-gray-400 bg-gray-50 px-2 py-1 rounded-md uppercase tracking-tighter">
@@ -335,8 +360,8 @@ function PortalContent() {
                   ))}
                   <div className="pt-6 border-t border-gray-100 flex justify-between items-end animate-reveal-up" style={{ animationDelay: '0.8s' }}>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Abonado</p>
-                    <p className="text-xl font-black text-emerald-600 tracking-tighter group-hover:scale-110 transition-transform">
-                      {formatCurrency(ingresos.reduce((acc, curr) => acc + (curr.monto || 0), 0))}
+                    <p className="text-xl font-black text-emerald-600 tracking-tighter group-hover:scale-105 transition-all">
+                      {formatCurrency(ingresos.filter(p => p.estado === 'pagado').reduce((acc, curr) => acc + (curr.monto || 0), 0))}
                     </p>
                   </div>
                 </div>
