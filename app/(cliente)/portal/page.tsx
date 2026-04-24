@@ -205,45 +205,45 @@ function PortalContent() {
         </section>
 
         {/* Progress & Upload Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          <section className="lg:col-span-2 space-y-6 animate-reveal-up" style={{ animationDelay: '0.3s' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
+          <section className="lg:col-span-2 space-y-4 sm:space-y-6 animate-reveal-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-1.5 h-6 bg-[#D4A017] rounded-full animate-pulse" />
-                <h2 className="text-xl font-black text-[#0F0A4D] uppercase tracking-wider">Estado de tu Trámite</h2>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-1.5 h-5 sm:h-6 bg-[#D4A017] rounded-full animate-pulse" />
+                <h2 className="text-lg sm:text-xl font-black text-[#0F0A4D] uppercase tracking-wider">Estado de tu Trámite</h2>
               </div>
-              <Badge
-                variant={cliente.estado === 'aprobado' ? 'success' : 'warning'}
-                className="uppercase tracking-widest px-4"
+              <Badge 
+                variant={cliente.estado === 'aprobado' ? 'success' : 'warning'} 
+                className="uppercase tracking-widest px-3 sm:px-4 text-[9px] sm:text-[11px]"
               >
                 {cliente.estado}
               </Badge>
             </div>
-            <Card padding="lg" hasAccent className="hover:!translate-y-0 shadow-none border border-gray-100 bg-white/50">
-              <div className="px-4">
+            <Card padding="none" hasAccent className="hover:!translate-y-0 shadow-none border border-gray-100 bg-white/50">
+              <div className="px-2 sm:px-4">
                 <StatusTracker currentStep={cliente.estado as EstadoOperacion} />
               </div>
             </Card>
 
             {/* Property Map Integration */}
-            <PropertyMap
-              direccion={cliente.direccion}
-              nombre={cliente.nombre}
+            <PropertyMap 
+              direccion={cliente.direccion} 
+              nombre={cliente.nombre} 
             />
           </section>
 
           {/* Upload Zone - Instant Sidebar Access */}
-          <section className="space-y-6 animate-reveal-up" style={{ animationDelay: '0.4s' }}>
-            <div className="flex items-center gap-3">
-              <PlusCircle className="w-5 h-5 text-[#D4A017]" />
-              <h2 className="text-xl font-black text-[#0F0A4D] uppercase tracking-wider">Subir Requisito</h2>
+          <section className="space-y-4 sm:space-y-6 animate-reveal-up" style={{ animationDelay: '0.4s' }}>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#D4A017]" />
+              <h2 className="text-lg sm:text-xl font-black text-[#0F0A4D] uppercase tracking-wider">Subir Requisito</h2>
             </div>
-            <DocumentUploadZone
-              clienteId={resolvedId!}
+            <DocumentUploadZone 
+              clienteId={resolvedId!} 
               onSuccess={() => {
                 // Refresh data
                 ClienteService.getDetailedById(resolvedId!).then(setData);
-              }}
+              }} 
             />
           </section>
         </div>

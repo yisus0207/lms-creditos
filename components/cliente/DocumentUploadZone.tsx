@@ -119,28 +119,28 @@ export default function DocumentUploadZone({ clienteId, onSuccess }: DocumentUpl
 
   return (
     <Card padding="none" className="overflow-hidden border-2 border-dashed border-gray-200 bg-white/50 backdrop-blur-sm group hover:border-[#D4A017] transition-all duration-500">
-      <div className="p-8 space-y-6">
-        <div className="flex flex-col items-center text-center space-y-4">
-            <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center transition-all duration-500 shadow-xl ${
+      <div className="p-5 sm:p-8 space-y-5 sm:space-y-6">
+        <div className="flex flex-col items-center text-center space-y-3 sm:space-y-4">
+            <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-[16px] sm:rounded-[24px] flex items-center justify-center transition-all duration-500 shadow-xl ${
               status === 'success' ? 'bg-emerald-500 text-white rotate-[360deg]' : 
               status === 'error' ? 'bg-red-500 text-white' :
               'bg-[#0F0A4D] text-[#D4A017] group-hover:scale-110'
             }`}>
-              {uploading ? <Loader2 className="w-8 h-8 animate-spin" /> : 
-               status === 'success' ? <FileCheck className="w-10 h-10" /> :
-               status === 'error' ? <AlertCircle className="w-8 h-8" /> :
-               <Upload className="w-8 h-8" />}
+              {uploading ? <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin" /> : 
+               status === 'success' ? <FileCheck className="w-8 h-8 sm:w-10 sm:h-10" /> :
+               status === 'error' ? <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8" /> :
+               <Upload className="w-6 h-6 sm:w-8 sm:h-8" />}
             </div>
             <div>
-              <h4 className="text-xl font-black text-[#0F0A4D] tracking-tight">Zona de Carga Segura</h4>
-              <p className="text-xs font-medium text-gray-500 max-w-[200px] mx-auto">Sube tus archivos para agilizar el trámite.</p>
+              <h4 className="text-lg sm:text-xl font-black text-[#0F0A4D] tracking-tight">Zona de Carga Segura</h4>
+              <p className="text-[10px] sm:text-xs font-medium text-gray-500 max-w-[200px] mx-auto">Sube tus archivos para agilizar el trámite.</p>
             </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {/* Custom Styled Dropdown */}
-            <div className="space-y-3" ref={dropdownRef}>
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Tipo de Documento</label>
+            <div className="space-y-2 sm:space-y-3" ref={dropdownRef}>
+              <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Tipo de Documento</label>
               <div className="relative">
                 <button
                   type="button"
