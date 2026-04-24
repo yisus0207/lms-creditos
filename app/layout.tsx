@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import './globals.css';
 import PWAInstallPrompt from '@/components/shared/PWAInstallPrompt';
@@ -8,10 +8,6 @@ const geist = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
 });
-
-export const viewport: Viewport = {
-  width: 1024,
-};
 
 export const metadata: Metadata = {
   title: {
