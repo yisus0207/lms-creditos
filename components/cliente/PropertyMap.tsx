@@ -38,7 +38,7 @@ export default function PropertyMap({ direccion, nombre }: PropertyMapProps) {
       <div className="relative h-[250px] sm:h-[300px] w-full">
         {/* Decorative mask for premium feel */}
         <div className="absolute inset-0 z-10 pointer-events-none ring-1 ring-inset ring-black/5 rounded-b-[32px]" />
-        
+
         <iframe
           src={embedUrl}
           className="w-full h-full border-0 absolute inset-0 grayscale-[0.2] contrast-[1.1] hover:grayscale-0 transition-all duration-1000"
@@ -56,7 +56,7 @@ export default function PropertyMap({ direccion, nombre }: PropertyMapProps) {
                 {direccion || 'Avenida Principal #12-34, Cúcuta'}
               </p>
             </div>
-            <button 
+            <button
               onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank')}
               className="w-10 h-10 bg-white/10 hover:bg-[#D4A017] text-white rounded-xl flex items-center justify-center transition-colors"
             >
