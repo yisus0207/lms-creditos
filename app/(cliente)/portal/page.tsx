@@ -162,39 +162,38 @@ function PortalContent() {
       {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#0F0A4D] to-[#FDFDFD] opacity-[0.03] pointer-events-none" />
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#D4A017] opacity-[0.03] rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="max-w-6xl mx-auto px-4 lg:px-12 py-12 relative z-10 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-        {/* Hero Welcome */}
-        <div className="relative overflow-hidden bg-[#0F0A4D] rounded-[40px] p-8 sm:p-12 text-white shadow-2xl shadow-navy-900/20 animate-reveal-up">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4A017] opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl animate-pulse" />
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-8">
-            <div className="animate-reveal-right" style={{ animationDelay: '0.2s' }}>
-              <div className="flex items-center gap-4 mb-6">
-                <img
-                  src="/images/logo.jpg"
-                  alt="LMS Logo"
-                  className="w-12 h-12 rounded-2xl border border-[#D4A017]/50 shadow-lg shadow-[#D4A017]/10 animate-floating"
-                />
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4A017] leading-none">Conexión Segura</span>
-                  <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/40 mt-1">Portal del Cliente</span>
-                </div>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tighter mb-2">
-                Hola, <span className="text-[#D4A017]">{cliente.nombre.split(' ')[0]}</span>
-              </h1>
-              <p className="text-gray-400 font-medium max-w-md">
-                Gestiona tu solicitud de crédito hipotecario y documentos desde tu espacio privado.
-              </p>
-            </div>
-            <div className="hidden lg:block animate-reveal-up" style={{ animationDelay: '0.4s' }}>
-              <div className="bg-white/5 backdrop-blur-md rounded-3xl p-6 border border-white/10 text-center min-w-[200px] hover:bg-white/10 transition-colors group">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#D4A017] mb-2 group-hover:scale-110 transition-transform">Inversión Estimada</p>
-                <p className="text-3xl font-black group-hover:text-[#D4A017] transition-colors">{formatCurrency(cliente.valor_estimado || 0)}</p>
+      <div className="max-w-6xl mx-auto px-2 lg:px-12 py-4 sm:py-12 relative z-10 space-y-4 sm:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      {/* Hero Welcome */}
+      <div className="relative overflow-hidden bg-[#0F0A4D] rounded-2xl sm:rounded-[40px] p-4 sm:p-12 text-white shadow-lg animate-reveal-up">
+        <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 bg-[#D4A017] opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl animate-pulse" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8">
+          <div className="animate-reveal-right" style={{ animationDelay: '0.2s' }}>
+            <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-6">
+              <img 
+                src="/images/logo.jpg" 
+                alt="LMS Logo" 
+                className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl border border-[#D4A017]/50 shadow-md shadow-[#D4A017]/10"
+              />
+              <div className="flex flex-col">
+                <span className="text-[7px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#D4A017] leading-none">Conexión Segura</span>
+                <span className="text-[6px] sm:text-[8px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-white/40 mt-0.5">Portal del Cliente</span>
               </div>
             </div>
+            <h1 className="text-xl sm:text-4xl font-black tracking-tight mb-1 sm:mb-2">
+              Hola, <span className="text-[#D4A017]">{cliente.nombre.split(' ')[0]}</span>
+            </h1>
+            <p className="text-[10px] sm:text-base text-gray-400 font-medium max-w-[250px] sm:max-w-md leading-tight">
+              Gestiona tu solicitud de crédito hipotecario y documentos desde tu espacio privado.
+            </p>
+          </div>
+          <div className="lg:block animate-reveal-up" style={{ animationDelay: '0.4s' }}>
+             <div className="bg-white/5 backdrop-blur-md rounded-xl sm:rounded-3xl p-3 sm:p-6 border border-white/10 text-left sm:text-center min-w-[140px] sm:min-w-[200px]">
+                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-[#D4A017] mb-0.5 sm:mb-2">Inversión Estimada</p>
+                <p className="text-lg sm:text-3xl font-black">{formatCurrency(cliente.valor_estimado || 0)}</p>
+             </div>
           </div>
         </div>
+      </div>
 
         {/* Financial Summary */}
         <section className="animate-reveal-up" style={{ animationDelay: '0.2s' }}>

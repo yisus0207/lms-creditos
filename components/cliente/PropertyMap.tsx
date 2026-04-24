@@ -14,28 +14,30 @@ export default function PropertyMap({ direccion, nombre }: PropertyMapProps) {
   const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 
   return (
-    <Card padding="none" className="overflow-hidden border border-gray-100 shadow-none hover:shadow-2xl transition-all duration-700 bg-white/40 backdrop-blur-md group h-full min-h-[300px]">
-      <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white/50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#0F0A4D] rounded-xl flex items-center justify-center text-[#D4A017] shadow-lg shadow-navy-900/20 group-hover:scale-110 transition-transform">
-            <MapPin className="w-5 h-5" />
+    <Card padding="none" className="overflow-hidden border border-gray-100 shadow-none hover:shadow-2xl transition-all duration-700 bg-white/40 backdrop-blur-md group h-full min-h-[200px] sm:min-h-[400px]">
+      <div className="p-3 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-white/50">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-7 h-7 sm:w-10 sm:h-10 bg-[#0F0A4D] rounded-lg sm:rounded-xl flex items-center justify-center text-[#D4A017] shadow-md sm:shadow-lg shadow-navy-900/20 group-hover:scale-110 transition-transform shrink-0">
+            <MapPin className="w-3 h-3 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-[#0F0A4D] uppercase tracking-wider">Ubicación del Inmueble</h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-              <Sparkles className="w-2 h-2 text-[#D4A017]" />
-              Localización Satelital en Tiempo Real
-            </p>
+            <h3 className="text-[10px] sm:text-sm font-black text-[#0F0A4D] uppercase tracking-wider">Localización Inmueble</h3>
+            <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5">
+               <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+               <p className="text-[7px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+                 GPS Activo
+               </p>
+            </div>
           </div>
         </div>
         {!direccion && (
-          <span className="text-[9px] font-black bg-amber-50 text-amber-600 px-3 py-1 rounded-full border border-amber-100 animate-pulse">
+          <span className="text-[7px] sm:text-[9px] font-black bg-[#FFF9E8] text-[#D4A017] px-2 sm:px-3 py-1 rounded-full border border-[#D4A017]/20 uppercase tracking-tighter">
             Sede Principal
           </span>
         )}
       </div>
 
-      <div className="relative h-[250px] sm:h-[300px] w-full">
+      <div className="relative h-[160px] sm:h-[340px] w-full overflow-hidden">
         {/* Decorative mask for premium feel */}
         <div className="absolute inset-0 z-10 pointer-events-none ring-1 ring-inset ring-black/5 rounded-b-[32px]" />
 
