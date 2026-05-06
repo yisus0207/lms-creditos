@@ -9,12 +9,12 @@ import DashboardHeader from '@/components/layout/DashboardHeader';
 import Card from '@/components/ui/Card';
 import StatCard from '@/components/ui/StatCard';
 import { formatCurrency } from '@/lib/utils';
-import { 
-  Users, 
-  DollarSign, 
-  Wallet, 
-  FileCheck, 
-  TrendingUp, 
+import {
+  Users,
+  DollarSign,
+  Wallet,
+  FileCheck,
+  TrendingUp,
   Gem
 } from 'lucide-react';
 import {
@@ -29,7 +29,7 @@ import {
 } from 'recharts';
 
 const MONTHS_FULL = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
@@ -96,7 +96,7 @@ export default function DashboardPage() {
       clientes: 0,
     }
   });
-  
+
   const [monthlyTrendData, setMonthlyTrendData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -115,17 +115,17 @@ export default function DashboardPage() {
         const firstDayPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
         const prevMonthIngresos = ingresos.filter(i => {
-           const d = new Date(i.fecha);
-           return d >= firstDayPrevMonth && d < firstDayThisMonth;
+          const d = new Date(i.fecha);
+          return d >= firstDayPrevMonth && d < firstDayThisMonth;
         }).reduce((acc, curr) => acc + curr.monto, 0);
 
         const currentMonthIngresos = ingresos.filter(i => {
-           const d = new Date(i.fecha);
-           return d >= firstDayThisMonth;
+          const d = new Date(i.fecha);
+          return d >= firstDayThisMonth;
         }).reduce((acc, curr) => acc + curr.monto, 0);
 
-        const tendenciaIngresos = prevMonthIngresos > 0 
-          ? Math.round(((currentMonthIngresos - prevMonthIngresos) / prevMonthIngresos) * 100) 
+        const tendenciaIngresos = prevMonthIngresos > 0
+          ? Math.round(((currentMonthIngresos - prevMonthIngresos) / prevMonthIngresos) * 100)
           : 0;
 
         setStats({
@@ -156,7 +156,7 @@ export default function DashboardPage() {
         });
 
         const trendData = yearBuckets.map(({ name, recaudo }) => ({ name, recaudo }));
-        
+
         setMonthlyTrendData(trendData);
 
       } catch (err) {
@@ -187,7 +187,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="show"
@@ -270,7 +270,7 @@ export default function DashboardPage() {
                 <span className="text-[10px] font-black text-[#0F0A4D] uppercase">En vivo</span>
               </div>
             </div>
-            
+
             <div className="h-[350px] w-full pr-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart

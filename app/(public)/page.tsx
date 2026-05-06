@@ -47,10 +47,12 @@ export default function LandingPage() {
               <span className="font-bold text-[#0F0A4D]">Válido para radicaciones este mes</span>
             </div>
 
-            <Button size="lg" className="rounded-2xl px-8 shadow-xl shadow-amber-100 whitespace-nowrap flex-nowrap">
-              Asegurar Mi Cupo
-              <ArrowRight className="w-5 h-5 ml-2 shrink-0" />
-            </Button>
+            <Link href="/register">
+              <Button size="lg" className="rounded-2xl px-8 shadow-xl shadow-amber-100 whitespace-nowrap flex-nowrap">
+                Asegurar Mi Cupo
+                <ArrowRight className="w-5 h-5 ml-2 shrink-0" />
+              </Button>
+            </Link>
           </div>
 
           <div className="flex-1 w-full relative">

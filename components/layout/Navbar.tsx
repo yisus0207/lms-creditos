@@ -141,7 +141,7 @@ export default function Navbar() {
                     Iniciar sesión
                   </Button>
                 </Link>
-                <Link href="/registro">
+                <Link href="/register">
                   <Button variant="primary" size="sm">
                     Registrarse
                   </Button>
@@ -190,7 +190,7 @@ export default function Navbar() {
                   Iniciar sesión
                 </Button>
               </Link>
-              <Link href="/registro" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/register" onClick={() => setIsMenuOpen(false)}>
                 <Button variant="primary" className="w-full">
                   Registrarse
                 </Button>

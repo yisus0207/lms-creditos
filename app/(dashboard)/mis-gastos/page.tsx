@@ -536,23 +536,23 @@ export default function MisGastosPage() {
             {gastos.slice(0, 50).map((g) => (
               <li
                 key={g.id}
-                className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"
+                className="flex items-center justify-between gap-2 py-3 text-sm"
               >
-                <div>
-                  <p className="font-black text-[#0F0A4D]">{g.categoria}</p>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+                <div className="min-w-0 flex-1">
+                  <p className="font-black text-[#0F0A4D] truncate">{g.categoria}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">
                     {formatGastoMesAnioLabel(g.fecha)}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-black text-rose-600">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <span className="font-black text-rose-600 whitespace-nowrap">
                     {formatCurrency(g.monto)}
                   </span>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       onClick={() => handleEditClick(g)}
-                      className="p-2 rounded-xl text-gray-300 hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                      className="p-1.5 sm:p-2 rounded-xl text-gray-300 hover:text-amber-500 hover:bg-amber-50 transition-colors"
                       aria-label="Editar"
                     >
                       <Pencil className="w-4 h-4" />
@@ -560,7 +560,7 @@ export default function MisGastosPage() {
                     <button
                       type="button"
                       onClick={() => handleDeleteClick(g.id)}
-                      className="p-2 rounded-xl text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                      className="p-1.5 sm:p-2 rounded-xl text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
                       aria-label="Eliminar"
                     >
                       <Trash2 className="w-4 h-4" />
