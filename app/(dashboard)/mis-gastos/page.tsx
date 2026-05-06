@@ -8,7 +8,7 @@ import UIModal from '@/components/ui/UIModal';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import MonthPicker from '@/components/ui/MonthPicker';
 import DeleteConfirmModal from '@/components/shared/DeleteConfirmModal';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatCompact } from '@/lib/utils';
 import { GASTO_CATEGORIAS } from '@/constants';
 import { GastoService } from '@/services/gasto.service';
 import { IngresoService } from '@/services/ingreso.service';
@@ -312,38 +312,38 @@ export default function MisGastosPage() {
         description="Gastos del hogar y comparación con ingresos cobrados por mes (año actual)."
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-5 border border-emerald-100 bg-emerald-50/40">
-          <div className="flex items-center gap-2 text-emerald-800 mb-1">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-[10px] font-black uppercase tracking-widest">
+      <div className="grid grid-cols-3 gap-2 md:gap-4">
+        <Card className="p-3 md:p-5 border border-emerald-100 bg-emerald-50/40">
+          <div className="flex items-center gap-1 md:gap-2 text-emerald-800 mb-1">
+            <TrendingUp className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-widest leading-tight">
               Ingresos {currentYear} (pagado)
             </span>
           </div>
-          <p className="text-2xl font-black text-[#0F0A4D]">
+          <p className="text-[10px] sm:text-[13px] md:text-2xl font-black text-[#0F0A4D] tracking-tighter whitespace-nowrap overflow-hidden text-ellipsis">
             {loading ? '…' : formatCurrency(totals.ingresosYtd)}
           </p>
         </Card>
-        <Card className="p-5 border border-rose-100 bg-rose-50/40">
-          <div className="flex items-center gap-2 text-rose-800 mb-1">
-            <TrendingDown className="w-4 h-4" />
-            <span className="text-[10px] font-black uppercase tracking-widest">
+        <Card className="p-3 md:p-5 border border-rose-100 bg-rose-50/40">
+          <div className="flex items-center gap-1 md:gap-2 text-rose-800 mb-1">
+            <TrendingDown className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-widest leading-tight">
               Gastos {currentYear}
             </span>
           </div>
-          <p className="text-2xl font-black text-[#0F0A4D]">
+          <p className="text-[10px] sm:text-[13px] md:text-2xl font-black text-[#0F0A4D] tracking-tighter whitespace-nowrap overflow-hidden text-ellipsis">
             {loading ? '…' : formatCurrency(totals.gastosYtd)}
           </p>
         </Card>
-        <Card className="p-5 border border-[#D4A017]/30 bg-amber-50/30">
-          <div className="flex items-center gap-2 text-[#0F0A4D]/70 mb-1">
-            <Receipt className="w-4 h-4 text-[#D4A017]" />
-            <span className="text-[10px] font-black uppercase tracking-widest">
+        <Card className="p-3 md:p-5 border border-[#D4A017]/30 bg-amber-50/30">
+          <div className="flex items-center gap-1 md:gap-2 text-[#0F0A4D]/70 mb-1">
+            <Receipt className="w-3 h-3 md:w-4 md:h-4 text-[#D4A017]" />
+            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-widest leading-tight">
               Balance (ing − gast)
             </span>
           </div>
           <p
-            className={`text-2xl font-black ${
+            className={`text-[10px] sm:text-[13px] md:text-2xl font-black tracking-tighter whitespace-nowrap overflow-hidden text-ellipsis ${
               totals.balance >= 0 ? 'text-emerald-700' : 'text-rose-600'
             }`}
           >

@@ -88,18 +88,18 @@ export default function SubsidioDetailPage() {
       </Link>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">Cédula</p>
-          <p className="text-2xl font-black text-[#0B1E3F]">{subsidio.cliente_cedula}</p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-6">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 p-3 sm:p-8 shadow-sm">
+          <p className="text-[7px] sm:text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 sm:mb-2">Cédula</p>
+          <p className="text-[10px] sm:text-[13px] md:text-2xl font-black text-[#0B1E3F] tracking-tighter truncate">{subsidio.cliente_cedula}</p>
         </div>
-        <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">Valor Total Subsidio</p>
-          <p className="text-2xl font-black text-[#D4A017]">{formatCurrency(subsidio.valor_total)}</p>
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 p-3 sm:p-8 shadow-sm">
+          <p className="text-[7px] sm:text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 sm:mb-2 leading-tight">Valor Total</p>
+          <p className="text-[10px] sm:text-[13px] md:text-2xl font-black text-[#D4A017] tracking-tighter truncate">{formatCurrency(subsidio.valor_total)}</p>
         </div>
-        <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">Pendiente</p>
-          <p className={`text-2xl font-black ${(subsidio.pendiente || 0) > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 p-3 sm:p-8 shadow-sm">
+          <p className="text-[7px] sm:text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1 sm:mb-2">Pendiente</p>
+          <p className={`text-[10px] sm:text-[13px] md:text-2xl font-black tracking-tighter truncate ${(subsidio.pendiente || 0) > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
             {formatCurrency(subsidio.pendiente)}
           </p>
         </div>

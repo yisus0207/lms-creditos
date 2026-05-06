@@ -8,9 +8,9 @@ import IngresoTable from '@/components/shared/IngresoTable';
 import IngresoForm from '@/components/shared/IngresoForm';
 import UIModal from '@/components/ui/UIModal';
 import DeleteConfirmModal from '@/components/shared/DeleteConfirmModal';
-import { cn } from '@/lib/utils';
+import Pagination from '@/components/ui/Pagination';
 import { IngresoService, IngresoWithCliente } from '@/services/ingreso.service';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 export default function IngresosPage() {
@@ -155,46 +155,11 @@ export default function IngresosPage() {
                 onDelete={setDeleteTarget}
               />
               
-              {/* Pagination UI */}
-              {totalPages > 1 && (
-                <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex items-center justify-between">
-                  <div className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
-                    Página {currentPage} de {totalPages}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => paginate(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                        <button
-                          key={num}
-                          onClick={() => paginate(num)}
-                          className={cn(
-                            "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black transition-all",
-                            currentPage === num 
-                              ? "bg-[#D4A017] text-[#0F0A4D] shadow-lg shadow-amber-900/10"
-                              : "bg-white border border-gray-100 text-gray-400 hover:bg-gray-100"
-                          )}
-                        >
-                          {num}
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => paginate(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={paginate}
+              />
             </div>
           ) : (
             <div className="flex h-96 items-center justify-center text-gray-400 italic">

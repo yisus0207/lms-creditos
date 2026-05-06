@@ -15,25 +15,30 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
-      <div className="flex h-screen overflow-hidden bg-gray-50 main-layout-container">
-        {/* Sidebar (Desktop) */}
-        <div className="desktop-sidebar-container h-full">
-          <Sidebar aria-label="Sidebar principal" />
+      {/* App Shell: flex h-dvh overflow-hidden — igual al patrón Kovi */}
+      <div className="app-shell bg-gray-50">
+
+        {/* Sidebar — solo desktop (lg+), controlado por CSS */}
+        <div className="desktop-sidebar-container">
+          <Sidebar />
         </div>
 
-        {/* Mobile Navigation (Bottom Bar) */}
-        <div className="mobile-nav-container">
-          <MobileNav />
-        </div>
+        {/* Área principal scrollable */}
+        <main className="main-scroll-area relative">
+          <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+            {children}
+          </div>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto w-full relative">
-          <div className="mx-auto max-w-7xl p-6 lg:p-8">{children}</div>
-          
-          {/* AI Assistant Alexa (Floating) */}
-          <AlexaAssistant />
+          {/* Alexa solo desktop — en mobile va integrada en el tab bar */}
+          <div className="hidden lg:block">
+            <AlexaAssistant />
+          </div>
         </main>
+
       </div>
+
+      {/* Tab Bar mobile — FUERA del app-shell, fixed al viewport */}
+      <MobileNav />
     </AuthGuard>
   );
 }

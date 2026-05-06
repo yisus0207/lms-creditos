@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import DashboardHeader from '@/components/layout/DashboardHeader';
-import { Plus, Eye, Trash2, Search, TriangleAlert, X, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Plus, Eye, Trash2, Search, TriangleAlert, X, Pencil } from 'lucide-react';
+import { cn, formatCompact } from '@/lib/utils';
+import Pagination from '@/components/ui/Pagination';
 import Button from '@/components/ui/Button';
 import { SubsidioService } from '@/services/subsidio.service';
 import { ClienteService } from '@/services/cliente.service';
@@ -14,22 +15,24 @@ import DeleteConfirmModal from '@/components/shared/DeleteConfirmModal';
 import ClienteForm from '@/components/shared/ClienteForm';
 import Link from 'next/link';
 
-const formatCurrency = (n: number = 0) =>
-  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
-
-function StatCard({ label, value, color, icon }: { label: string; value: string; color: string; icon: React.ReactNode }) {
+function StatCard({ label, value, color, icon, rawValue }: { label: string; value: string; color: string; icon: React.ReactNode; rawValue?: number }) {
   return (
-    <div className="bg-white rounded-[32px] border border-gray-100 p-8 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
-      <div className="flex items-center gap-4 mb-4">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color === 'text-[#D4A017]' ? 'bg-amber-50' : color === 'text-emerald-500' ? 'bg-emerald-50' : 'bg-rose-50'}`}>
-          <span className={`${color} text-xl font-black`}>{icon}</span>
+    <div className="bg-white rounded-[20px] border border-gray-100 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${color === 'text-[#D4A017]' ? 'bg-amber-50' : color === 'text-emerald-500' ? 'bg-emerald-50' : 'bg-rose-50'}`}>
+          <span className={`${color} text-sm font-black`}>{icon}</span>
         </div>
-        <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em]">{label}</p>
+        <p className="text-[9px] text-gray-400 uppercase font-black tracking-[0.15em] leading-tight">{label}</p>
       </div>
-      <p className={`text-3xl font-black ${color} transition-all group-hover:scale-[1.02] origin-left`}>{value}</p>
+      <p className={`text-[10px] sm:text-[13px] md:text-xl font-black tracking-tighter ${color} transition-all group-hover:scale-[1.02] origin-left leading-tight whitespace-nowrap overflow-hidden text-ellipsis`}>
+        {value}
+      </p>
     </div>
   );
 }
+
+const formatCurrency = (n: number = 0) =>
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n);
 
 
 
@@ -147,11 +150,11 @@ export default function SubsidiosPage() {
         description="Gestión de subsidios y seguimiento de aportes por cliente."
       />
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatCard label="Total Subsidios" value={formatCurrency(totalSubsidios)} color="text-[#D4A017]" icon="$" />
-        <StatCard label="Total Abonado" value={formatCurrency(totalAbonado)} color="text-emerald-500" icon="✓" />
-        <StatCard label="Total Pendiente" value={formatCurrency(totalPendiente)} color="text-rose-500" icon="⏳" />
+      {/* Stats — siempre 3 columnas para que quepan en mobile */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-6">
+        <StatCard label="Total Subsidios" value={formatCurrency(totalSubsidios)} rawValue={totalSubsidios} color="text-[#D4A017]" icon="$" />
+        <StatCard label="Total Abonado" value={formatCurrency(totalAbonado)} rawValue={totalAbonado} color="text-emerald-500" icon="✓" />
+        <StatCard label="Total Pendiente" value={formatCurrency(totalPendiente)} rawValue={totalPendiente} color="text-rose-500" icon="⏳" />
       </div>
 
       {/* Actions bar */}
@@ -166,30 +169,94 @@ export default function SubsidiosPage() {
             className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-[#D4A017]/5 focus:border-[#D4A017] outline-none transition-all shadow-sm"
           />
         </div>
-        <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex flex-wrap gap-2 sm:gap-4 items-center">
           <button
             onClick={() => setOpenNewClienteModal(true)}
-            className="h-14 bg-[#0B1E3F] hover:bg-[#1a2e4d] text-white rounded-2xl font-black px-8 flex items-center gap-3 shadow-xl shadow-blue-100 transition-all hover:scale-[1.02] whitespace-nowrap"
+            className="h-10 sm:h-14 text-xs sm:text-base bg-[#0B1E3F] hover:bg-[#1a2e4d] text-white rounded-xl sm:rounded-2xl font-black px-4 sm:px-8 flex items-center gap-2 sm:gap-3 shadow-xl shadow-blue-100 transition-all hover:scale-[1.02] whitespace-nowrap"
           >
-            <Plus className="w-5 h-5" />
-            Nuevo Cliente (Subsidio)
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="sm:hidden">Nuevo Cl.</span>
+            <span className="hidden sm:inline">Nuevo Cliente (Subsidio)</span>
           </button>
           <button
             onClick={() => {
               setEditTarget(null);
               setOpenModal(true);
             }}
-            className="h-14 bg-gradient-to-r from-[#D4A017] to-amber-400 hover:from-[#B8860B] hover:to-[#D4A017] text-white rounded-2xl font-black px-8 flex items-center gap-3 shadow-xl shadow-amber-100 transition-all hover:scale-[1.02] whitespace-nowrap"
+            className="h-10 sm:h-14 text-xs sm:text-base bg-gradient-to-r from-[#D4A017] to-amber-400 hover:from-[#B8860B] hover:to-[#D4A017] text-white rounded-xl sm:rounded-2xl font-black px-4 sm:px-8 flex items-center gap-2 sm:gap-3 shadow-xl shadow-amber-100 transition-all hover:scale-[1.02] whitespace-nowrap"
           >
-            <Plus className="w-5 h-5" />
-            Vincular Cliente Existente
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="sm:hidden">Vincular</span>
+            <span className="hidden sm:inline">Vincular Cliente Existente</span>
           </button>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table & Mobile Cards */}
       <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        
+        {/* === MOBILE VIEW (Cards) === */}
+        <div className="sm:hidden p-4 space-y-4">
+          {loading ? (
+            <div className="py-12 text-center text-gray-400">
+              <div className="w-5 h-5 rounded-full border-2 border-[#D4A017] border-t-transparent animate-spin mx-auto mb-3" />
+              <span className="text-sm font-medium">Cargando subsidios...</span>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-12 text-center flex flex-col items-center gap-3 text-gray-300">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-2xl">💰</div>
+              <p className="text-xs font-bold text-gray-400">No hay subsidios registrados.</p>
+            </div>
+          ) : currentSubsidios.map((s, index) => {
+            const pct = s.valor_total > 0 ? Math.min(100, Math.round(((s.total_abonos || 0) / s.valor_total) * 100)) : 0;
+            return (
+              <div key={s.id} className="p-4 rounded-2xl border border-gray-100 bg-gray-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#D4A017]/10 to-[#0F0A4D]/5 flex items-center justify-center text-[#0F0A4D] font-black text-[10px]">
+                      {indexOfFirstItem + index + 1}
+                    </div>
+                    <span className="font-bold text-[#0B1E3F] text-xs uppercase truncate max-w-[150px]">{s.cliente_nombre}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Link href={`/subsidios/${s.id}`} className="p-1.5 text-gray-400 hover:text-[#D4A017]"><Eye className="w-4 h-4" /></Link>
+                    <button onClick={() => handleEditOpen(s)} className="p-1.5 text-gray-400 hover:text-emerald-500"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => setDeleteTarget(s)} className="p-1.5 text-gray-400 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <div className="bg-white p-2 rounded-xl border border-gray-100">
+                    <span className="text-gray-400 uppercase font-black block mb-1">Cédula</span>
+                    <span className="font-bold text-gray-600">{s.cliente_cedula}</span>
+                  </div>
+                  <div className="bg-white p-2 rounded-xl border border-gray-100">
+                    <span className="text-gray-400 uppercase font-black block mb-1">Total</span>
+                    <span className="font-black text-[#D4A017]">{formatCurrency(s.valor_total)}</span>
+                  </div>
+                  <div className="bg-white p-2 rounded-xl border border-gray-100 col-span-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-gray-400 uppercase font-black">Progreso ({pct}%)</span>
+                      <span className="font-black text-emerald-500">{formatCurrency(s.total_abonos)}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                  <div className="bg-white p-2 rounded-xl border border-gray-100 col-span-2 flex justify-between items-center">
+                    <span className="text-gray-400 uppercase font-black">Pendiente</span>
+                    <span className={`font-black ${(s.pendiente || 0) <= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                      {(s.pendiente || 0) <= 0 ? 'Al día ✓' : formatCurrency(s.pendiente)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* === DESKTOP VIEW (Table) === */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gradient-to-r from-[#0F0A4D]/3 to-transparent">
@@ -282,46 +349,11 @@ export default function SubsidiosPage() {
           </table>
         </div>
         
-        {/* Pagination UI */}
-        {totalPages > 1 && (
-          <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex items-center justify-between mt-auto">
-            <div className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
-              Página {currentPage} de {totalPages}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                  <button
-                    key={num}
-                    onClick={() => paginate(num)}
-                    className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black transition-all",
-                      currentPage === num
-                        ? "bg-[#D4A017] text-[#0F0A4D] shadow-lg shadow-amber-900/10"
-                        : "bg-white border border-gray-100 text-gray-400 hover:bg-gray-100"
-                    )}
-                  >
-                    {num}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={paginate}
+        />
       </div>
 
       {/* Form Modal (Create/Edit) */}

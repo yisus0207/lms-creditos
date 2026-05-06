@@ -60,39 +60,68 @@ body {
   border-radius: 4px;
 }
 /* ============================================================
-   Responsiveness Utility Failsafes (Phase 19)
+   App Shell Variables
    ============================================================ */
 
-/* Mobile Navigation (Bottom Bar) */
-.mobile-nav-container {
-  display: block;
+:root {
+  --tab-bar-height: 70px;
+  --header-height: 56px;
 }
 
-@media (min-width: 1024px) {
-  .mobile-nav-container {
-    display: none !important;
-  }
+/* App Shell — contenedor raíz del dashboard */
+.app-shell {
+  display: flex;
+  height: 100dvh; /* dynamic viewport height — evita el bug de Safari mobile */
+  width: 100%;
+  overflow: hidden;
 }
 
-/* Desktop Sidebar */
+/* Sidebar desktop */
 .desktop-sidebar-container {
   display: none;
 }
 
 @media (min-width: 1024px) {
   .desktop-sidebar-container {
-    display: flex !important;
+    display: flex;
+    height: 100%;
+    flex-shrink: 0;
   }
 }
 
-/* Layout Padding Fix */
-.main-layout-container {
-  padding-bottom: 5rem; /* pb-20 */
+/* Main scroll area con padding para la tab bar en mobile */
+.main-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  /* En mobile deja espacio para la bottom tab bar */
+  padding-bottom: var(--tab-bar-height);
 }
 
 @media (min-width: 1024px) {
-  .main-layout-container {
-    padding-bottom: 0 !important;
+  .main-scroll-area {
+    /* En desktop no hay tab bar */
+    padding-bottom: 0;
+  }
+}
+
+/* Tab bar mobile — fixed bottom */
+.mobile-tab-bar {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--tab-bar-height);
+  z-index: 50;
+  /* Respeta el safe-area de iPhones con notch */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (min-width: 1024px) {
+  .mobile-tab-bar {
+    display: none;
   }
 }
 

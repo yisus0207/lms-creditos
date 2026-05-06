@@ -49,6 +49,7 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
   const [images, setImages] = useState<{ data: string; type: string; name: string ; blob: Blob }[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -93,6 +94,7 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
     if (!selectedClientId || images.length === 0) return;
 
     setIsSaving(true);
+    setSaveError(null);
     try {
       let finalBlob: Blob;
       let extension = 'pdf';
@@ -186,9 +188,10 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
       setImages([]);
       setSelectedClientId('');
       setCustomDocType('');
+      setSaveError(null);
     } catch (err: any) {
       console.error('Error saving document:', err.message);
-      alert(err.message || 'Error guardando documento.');
+      setSaveError(err.message || 'Error guardando documento. Intenta nuevamente.');
     } finally {
       setIsSaving(false);
     }
@@ -462,6 +465,14 @@ export default function ScannerModal({ isOpen, onClose, onSuccess, defaultClient
                     </>
                   )}
                 </button>
+
+                {/* Error inline — reemplaza el alert() nativo */}
+                {saveError && (
+                  <div className="flex items-start gap-3 bg-rose-50 border border-rose-100 rounded-[20px] px-5 py-4">
+                    <span className="text-rose-500 font-black text-xs uppercase tracking-wider">{saveError}</span>
+                  </div>
+                )}
+
                 <button
                   disabled={isSaving}
                   onClick={() => setStep(2)}

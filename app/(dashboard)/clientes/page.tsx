@@ -7,10 +7,10 @@ import ClienteForm from '@/components/shared/ClienteForm';
 import ClienteTable from '@/components/shared/ClienteTable';
 import Modal from '@/components/ui/Modal';
 import UIModal from '@/components/ui/UIModal';
+import Pagination from '@/components/ui/Pagination';
 import type { Cliente } from '@/types';
-import { cn } from '@/lib/utils';
 import SearchableSelect from '@/components/ui/SearchableSelect';
-import { Plus, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -89,23 +89,24 @@ export default function ClientesPage() {
         title="Gestión de Clientes"
         description="Administra la base de datos de prospectos y clientes activos."
         actions={
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <button
               onClick={() => {
                 setImportTargetId('');
                 setShowImportModal(true);
               }}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-50 hover:bg-gray-100 text-[#0F0A4D] border border-gray-100 rounded-2xl font-black transition-all active:scale-95 whitespace-nowrap hidden sm:flex"
+              className="flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-3 bg-gray-50 hover:bg-gray-100 text-[#0F0A4D] border border-gray-100 rounded-xl sm:rounded-2xl font-black text-xs sm:text-base transition-all active:scale-95 whitespace-nowrap hidden sm:flex"
             >
-              <Users className="w-5 h-5" />
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
               Vincular Cliente Existente
             </button>
             <button
               onClick={() => setShowForm(true)}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#D4A017] hover:bg-[#B8860B] text-[#0F0A4D] rounded-2xl font-black shadow-lg shadow-amber-900/10 transition-all active:scale-95 whitespace-nowrap"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 px-4 py-2.5 sm:px-6 sm:py-3 bg-[#D4A017] hover:bg-[#B8860B] text-[#0F0A4D] rounded-xl sm:rounded-2xl font-black text-xs sm:text-base shadow-lg shadow-amber-900/10 transition-all active:scale-95 whitespace-nowrap"
             >
-              <Plus className="w-5 h-5" />
-              Nuevo Cliente Banco
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="sm:hidden">Nuevo Cliente</span>
+              <span className="hidden sm:inline">Nuevo Cliente Banco</span>
             </button>
           </div>
         }
@@ -148,46 +149,11 @@ export default function ClientesPage() {
               startIndex={indexOfFirstItem}
             />
 
-            {/* Pagination UI */}
-            {totalPages > 1 && (
-              <div className="p-8 border-t border-gray-50 bg-gray-50/50 flex items-center justify-between">
-                <div className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">
-                  Página {currentPage} de {totalPages}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => paginate(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                      <button
-                        key={num}
-                        onClick={() => paginate(num)}
-                        className={cn(
-                          "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black transition-all",
-                          currentPage === num
-                            ? "bg-[#D4A017] text-[#0F0A4D] shadow-lg shadow-amber-900/10"
-                            : "bg-white border border-gray-100 text-gray-400 hover:bg-gray-100"
-                        )}
-                      >
-                        {num}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => paginate(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-xl bg-white border border-gray-100 text-[#0F0A4D] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all shadow-sm"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={paginate}
+            />
           </div>
         ) : (
           <div className="flex flex-col h-96 items-center justify-center text-gray-400 italic font-medium">

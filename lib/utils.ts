@@ -39,3 +39,16 @@ export function truncate(str: string, maxLength: number = 50): string {
   if (str.length <= maxLength) return str;
   return `${str.slice(0, maxLength)}…`;
 }
+
+/**
+ * Format a number as compact currency for mobile.
+ * e.g. 1200000 → $1.2M | 450000 → $450k | 8500 → $8.5k
+ */
+export function formatCompact(amount: number): string {
+  const abs = Math.abs(amount);
+  if (abs >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(1)}B`;
+  if (abs >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
+  if (abs >= 10_000) return `$${Math.round(amount / 1_000)}k`;
+  if (abs >= 1_000) return `$${(amount / 1_000).toFixed(1)}k`;
+  return `$${Math.round(amount)}`;
+}

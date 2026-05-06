@@ -198,8 +198,8 @@ export default function DashboardPage() {
         description="Gestión premium de la cartera hipotecaria y métricas de rendimiento."
       />
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      {/* KPI Cards Grid — 2 cols mobile, 3 cols tablet, 5 cols xl */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-6">
         <motion.div variants={itemVariants}>
           <StatCard
             title="Recaudado Total"
